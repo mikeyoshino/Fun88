@@ -1,0 +1,24 @@
+@{
+    ViewData["Title"] = "Admin";
+    Layout = "_AdminLayout";
+}
+
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-bottom:2rem">
+    <div class="stat-card">
+        <div class="stat-label">Total Games</div>
+        <div class="stat-value">@ViewBag.TotalGames</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Categories</div>
+        <div class="stat-value">@ViewBag.TotalCategories</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Pending Translations</div>
+        <div class="stat-value">@ViewBag.PendingTranslations</div>
+    </div>
+</div>
+
+<div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:1.5rem">
+    <h2 style="margin:0 0 0.5rem;font-size:1rem;color:rgba(255,255,255,0.5)">Quick Actions</h2>
+    <a href="/admin/games" style="color:var(--accent);text-decoration:none">Manage Games →</a>
+</div>

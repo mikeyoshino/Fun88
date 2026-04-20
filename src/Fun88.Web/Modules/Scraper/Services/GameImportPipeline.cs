@@ -36,8 +36,8 @@ public class GameImportPipeline(
                 PlayCount = 0,
                 LikeCount = 0,
                 IsActive = true,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow,
                 Translations =
                 [
                     new GameTranslation
@@ -79,8 +79,8 @@ public class GameImportPipeline(
                 PlayCount = 0,
                 LikeCount = 0,
                 IsActive = true,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow,
                 Translations =
                 [
                     new GameTranslation

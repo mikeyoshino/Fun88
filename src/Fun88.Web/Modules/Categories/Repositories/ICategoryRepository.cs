@@ -7,4 +7,5 @@ public interface ICategoryRepository
 {
     Task<IReadOnlyList<CategoryViewModel>> GetAllCategoriesAsync(string languageCode, CancellationToken ct = default);
     Task<Category?> GetBySlugAsync(string slug, CancellationToken ct = default);
+    Task<Category?> GetByIdAsync(int id, CancellationToken ct = default);
 }

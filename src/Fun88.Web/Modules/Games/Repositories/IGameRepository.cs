@@ -17,4 +17,5 @@ public interface IGameRepository
     Task<int> CountByCategorySlugAsync(string categorySlug, CancellationToken ct = default);
     Task<int> CountAllAsync(CancellationToken ct = default);
     Task AddAsync(Game game, CancellationToken ct = default);
+    Task DeactivateAsync(Guid id, CancellationToken ct = default);
 }

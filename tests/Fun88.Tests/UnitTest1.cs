@@ -1,10 +1,2 @@
-﻿namespace Fun88.Tests;
+﻿// Placeholder removed — see Scraper/GdEmbedUrlBuilderTests.cs, Scraper/GameImportPipelineTests.cs, Admin/AdminAuthServiceTests.cs
 
-public class UnitTest1
-{
-    [Fact]
-    public void Test1()
-    {
-
-    }
-}

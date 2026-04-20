@@ -1,0 +1,40 @@
+@model Fun88.Web.Modules.Admin.ViewModels.AdminCategoryFormViewModel
+@{
+    Layout = "_AdminLayout";
+}
+<form method="post" action="/admin/categories/@(Model.Id.HasValue ? "edit/" + Model.Id : "create")" style="max-width:480px">
+    @Html.AntiForgeryToken()
+    <div style="display:flex;flex-direction:column;gap:1rem">
+        <div>
+            <label style="display:block;color:rgba(255,255,255,0.5);font-size:0.8rem;margin-bottom:0.3rem">Slug *</label>
+            <input name="Slug" value="@Model.Slug" required style="width:100%;padding:0.6rem 0.85rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:#fff;font-size:0.95rem" />
+        </div>
+        <div>
+            <label style="display:block;color:rgba(255,255,255,0.5);font-size:0.8rem;margin-bottom:0.3rem">Icon (emoji or name)</label>
+            <input name="Icon" value="@Model.Icon" style="width:100%;padding:0.6rem 0.85rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:#fff;font-size:0.95rem" />
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+            <div>
+                <label style="display:block;color:rgba(255,255,255,0.5);font-size:0.8rem;margin-bottom:0.3rem">Sort Order</label>
+                <input name="SortOrder" type="number" value="@Model.SortOrder" style="width:100%;padding:0.6rem 0.85rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:#fff;font-size:0.95rem" />
+            </div>
+            <div style="display:flex;align-items:flex-end;padding-bottom:0.5rem">
+                <label style="display:flex;align-items:center;gap:0.5rem;color:rgba(255,255,255,0.6);font-size:0.9rem;cursor:pointer">
+                    <input name="IsActive" type="checkbox" value="true" @(Model.IsActive ? "checked" : "") /> Active
+                </label>
+            </div>
+        </div>
+        <div>
+            <label style="display:block;color:rgba(255,255,255,0.5);font-size:0.8rem;margin-bottom:0.3rem">Name (English) *</label>
+            <input name="NameEn" value="@Model.NameEn" required style="width:100%;padding:0.6rem 0.85rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:#fff;font-size:0.95rem" />
+        </div>
+        <div>
+            <label style="display:block;color:rgba(255,255,255,0.5);font-size:0.8rem;margin-bottom:0.3rem">Name (Thai)</label>
+            <input name="NameTh" value="@Model.NameTh" style="width:100%;padding:0.6rem 0.85rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:#fff;font-size:0.95rem" />
+        </div>
+        <div>
+            <button type="submit" class="btn btn-primary">Save Category</button>
+            <a href="/admin/categories" style="margin-left:1rem;color:rgba(255,255,255,0.4);text-decoration:none;font-size:0.9rem">Cancel</a>
+        </div>
+    </div>
+</form>

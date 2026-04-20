@@ -1,0 +1,71 @@
+@model List<Fun88.Web.Modules.Admin.ViewModels.AdminGameListItemViewModel>
+@{
+    ViewData["Title"] = "Games";
+    Layout = "_AdminLayout";
+}
+
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
+    <h2 style="margin:0;font-size:1.1rem">All Games</h2>
+    <div style="display:flex;gap:0.75rem">
+        <a href="/admin/games/create" class="btn btn-primary">+ Add Custom Game</a>
+        <button id="import-btn" class="btn btn-primary" onclick="triggerImport()">↓ Import from GameDistribution</button>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div style="background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.25);border-radius:7px;padding:0.6rem 1rem;margin-bottom:1rem;color:#34d399;font-size:0.9rem">@TempData["Success"]</div>
+}
+<div id="import-status" style="display:none;margin-bottom:1rem;padding:0.6rem 1rem;background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.25);border-radius:7px;color:#a78bfa;font-size:0.9rem"></div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Thumbnail</th><th>Title</th><th>Source</th><th>Plays</th><th>Status</th><th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var g in Model)
+        {
+            <tr>
+                <td><img src="@g.ThumbnailUrl" style="width:60px;height:40px;object-fit:cover;border-radius:4px" /></td>
+                <td>@g.Title<br /><small style="color:rgba(255,255,255,0.35)">@g.Slug</small></td>
+                <td><span style="font-size:0.75rem;padding:0.2rem 0.5rem;border-radius:4px;background:@(g.IsGdGame ? "rgba(99,102,241,0.2)" : "rgba(52,211,153,0.15)");color:@(g.IsGdGame ? "#6366f1" : "#34d399")">@(g.IsGdGame ? "GD" : "Custom")</span></td>
+                <td>@g.PlayCount.ToString("N0")</td>
+                <td><span style="color:@(g.IsActive ? "#34d399" : "#f87171")">@(g.IsActive ? "Active" : "Inactive")</span></td>
+                <td>
+                    <form method="post" action="/admin/games/delete/@g.Id" style="display:inline" onsubmit="return confirm('Deactivate this game?')">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-danger btn-sm">Deactivate</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+<script>
+async function triggerImport() {
+    document.getElementById('import-btn').disabled = true;
+    const status = document.getElementById('import-status');
+    status.style.display = 'block';
+    status.textContent = 'Importing from GameDistribution...';
+    try {
+        const token = document.querySelector('[name=__RequestVerificationToken]')?.value ?? '';
+        const res = await fetch('/admin/games/trigger-import', {
+            method: 'POST',
+            headers: { 'RequestVerificationToken': token }
+        });
+        const data = await res.json();
+        status.textContent = `Done — Imported: ${data.imported}, Skipped: ${data.skipped}, Failed: ${data.failed}`;
+    } catch (e) {
+        status.textContent = 'Import failed: ' + e.message;
+        status.style.color = '#f87171';
+    } finally {
+        document.getElementById('import-btn').disabled = false;
+    }
+}
+</script>
+<input type="hidden" id="antiforgery-token" />
+}

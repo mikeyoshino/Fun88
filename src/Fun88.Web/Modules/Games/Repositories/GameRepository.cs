@@ -147,4 +147,14 @@ public class GameRepository(Client supabaseClient) : IGameRepository
     {
         await supabaseClient.From<Game>().Insert(game, new Postgrest.QueryOptions { Returning = Postgrest.QueryOptions.ReturnType.Representation }, ct);
     }
+
+    public async Task DeactivateAsync(Guid id, CancellationToken ct = default)
+    {
+        var game = await supabaseClient.From<Game>()
+            .Filter("id", Postgrest.Constants.Operator.Equals, id.ToString())
+            .Single(ct);
+        if (game is null) return;
+        game.IsActive = false;
+        await supabaseClient.From<Game>().Update(game, cancellationToken: ct);
+    }
 }

@@ -35,10 +35,10 @@ public class Game : BaseModel
     public bool IsActive { get; set; } = true;
 
     [Column("created_at")]
-    public DateTime CreatedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 
     [Column("updated_at")]
-    public DateTime UpdatedAt { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
 
     [Reference(typeof(GameTranslation))]
     public List<GameTranslation> Translations { get; set; } = [];

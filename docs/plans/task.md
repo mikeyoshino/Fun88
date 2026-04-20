@@ -11,13 +11,13 @@
 - [x] Task 9: GameDistributionProvider
 - [x] Task 10: GdEmbedUrlBuilder
 - [x] Task 11: IGameImportPipeline + GameImportPipeline
-- [ ] Task 12: Admin Auth Service (Supabase Wrapper)
-- [ ] Task 13: Admin Auth Controller (Supabase Login)
-- [ ] Task 14: Admin Dashboard + _AdminLayout
-- [ ] Task 15: Admin Games Controller + Views
-- [ ] Task 16: Admin Categories Controller + Views
-- [ ] Task 17: Language Resolution Middleware
-- [ ] Task 18: Security Headers Middleware
+- [x] Task 12: Admin Auth Service (Supabase Wrapper)
+- [x] Task 13: Admin Auth Controller (Supabase Login)
+- [x] Task 14: Admin Dashboard + _AdminLayout
+- [x] Task 15: Admin Games Controller + Views
+- [x] Task 16: Admin Categories Controller + Views
+- [x] Task 17: Language Resolution Middleware
+- [x] Task 18: Security Headers Middleware
 - [ ] Task 19: _Layout.cshtml + site.css
 - [ ] Task 20: HomeController + Home View
 - [ ] Task 21: GamesController (Index + Detail) + Views

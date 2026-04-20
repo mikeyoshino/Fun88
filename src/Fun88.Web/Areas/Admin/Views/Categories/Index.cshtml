@@ -1,0 +1,27 @@
+@model IReadOnlyList<Fun88.Web.Modules.Categories.ViewModels.CategoryViewModel>
+@{
+    ViewData["Title"] = "Categories";
+    Layout = "_AdminLayout";
+}
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
+    <h2 style="margin:0;font-size:1.1rem">All Categories</h2>
+    <a href="/admin/categories/create" class="btn btn-primary">+ Add Category</a>
+</div>
+@if (TempData["Success"] != null)
+{
+    <div style="background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.25);border-radius:7px;padding:0.6rem 1rem;margin-bottom:1rem;color:#34d399;font-size:0.9rem">@TempData["Success"]</div>
+}
+<table>
+    <thead><tr><th>Icon</th><th>Name (EN)</th><th>Slug</th><th>Actions</th></tr></thead>
+    <tbody>
+        @foreach (var c in Model)
+        {
+            <tr>
+                <td>@c.Icon</td>
+                <td>@c.Name</td>
+                <td><code style="color:rgba(255,255,255,0.4);font-size:0.8rem">@c.Slug</code></td>
+                <td><a href="/admin/categories/edit/@c.Id" class="btn btn-sm" style="background:rgba(255,255,255,0.06);color:#fff">Edit</a></td>
+            </tr>
+        }
+    </tbody>
+</table>

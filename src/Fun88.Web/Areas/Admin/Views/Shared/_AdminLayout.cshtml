@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] – Fun88 Admin</title>
+    <link rel="stylesheet" href="~/css/site.css" />
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; background: #0f1117; color: #e2e8f0; font-family: 'Inter', sans-serif; display: flex; min-height: 100vh; }
+        .admin-sidebar { width: 220px; background: #1a1d27; border-right: 1px solid rgba(255,255,255,0.07); display: flex; flex-direction: column; padding: 1.5rem 0; flex-shrink: 0; }
+        .admin-sidebar .brand { padding: 0 1.25rem 1.5rem; font-size: 1rem; font-weight: 700; color: #fff; border-bottom: 1px solid rgba(255,255,255,0.07); margin-bottom: 1rem; }
+        .admin-sidebar a { display: flex; align-items: center; gap: 0.6rem; padding: 0.55rem 1.25rem; color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.9rem; border-radius: 0; transition: background 0.15s, color 0.15s; }
+        .admin-sidebar a:hover, .admin-sidebar a.active { background: rgba(124,58,237,0.15); color: #fff; }
+        .admin-main { flex: 1; display: flex; flex-direction: column; }
+        .admin-topbar { background: #1a1d27; border-bottom: 1px solid rgba(255,255,255,0.07); padding: 0.75rem 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+        .admin-topbar .page-title { font-weight: 600; font-size: 1rem; }
+        .admin-topbar form { display: inline; }
+        .admin-topbar button { background: none; border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.6); padding: 0.3rem 0.75rem; border-radius: 6px; cursor: pointer; font-size: 0.82rem; }
+        .admin-content { padding: 1.75rem; flex: 1; }
+        .stat-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); border-radius: 10px; padding: 1.25rem 1.5rem; }
+        .stat-label { color: rgba(255,255,255,0.45); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.4rem; }
+        .stat-value { font-size: 2rem; font-weight: 700; color: #fff; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 0.6rem 0.85rem; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 0.9rem; }
+        th { color: rgba(255,255,255,0.45); font-size: 0.78rem; text-transform: uppercase; }
+        .btn { display: inline-block; padding: 0.45rem 0.9rem; border-radius: 7px; font-size: 0.82rem; text-decoration: none; cursor: pointer; border: none; font-weight: 500; }
+        .btn-primary { background: #7c3aed; color: #fff; }
+        .btn-danger { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
+        .btn-sm { padding: 0.3rem 0.65rem; font-size: 0.78rem; }
+    </style>
+</head>
+<body>
+    <nav class="admin-sidebar">
+        <div class="brand">🎮 Fun88 Admin</div>
+        <a href="/admin" class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "AdminDashboard" ? "active" : "")">📊 Dashboard</a>
+        <a href="/admin/games" class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "AdminGames" ? "active" : "")">🎲 Games</a>
+        <a href="/admin/categories" class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "AdminCategories" ? "active" : "")">🏷️ Categories</a>
+    </nav>
+    <div class="admin-main">
+        <div class="admin-topbar">
+            <span class="page-title">@ViewData["Title"]</span>
+            <form method="post" action="/admin/auth/logout">
+                @Html.AntiForgeryToken()
+                <button type="submit">Sign Out</button>
+            </form>
+        </div>
+        <div class="admin-content">
+            @RenderBody()
+        </div>
+    </div>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
