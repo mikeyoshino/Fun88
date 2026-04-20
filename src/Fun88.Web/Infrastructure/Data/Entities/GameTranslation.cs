@@ -1,14 +1,30 @@
 namespace Fun88.Web.Infrastructure.Data.Entities;
 
-public class GameTranslation
-{
-    public Guid GameId { get; set; }
-    public string LanguageCode { get; set; } = string.Empty;
-    public string Title { get; set; } = string.Empty;
-    public string? Description { get; set; }
-    public string? ControlDescription { get; set; }
-    public string? MetaTitle { get; set; }
-    public string? MetaDescription { get; set; }
+using Postgrest.Attributes;
+using Postgrest.Models;
+using System;
 
-    public Game Game { get; set; } = null!;
+[Table("game_translations")]
+public class GameTranslation : BaseModel
+{
+    [PrimaryKey("game_id", false)]
+    public Guid GameId { get; set; }
+
+    [PrimaryKey("language_code", false)]
+    public string LanguageCode { get; set; } = string.Empty;
+
+    [Column("title")]
+    public string Title { get; set; } = string.Empty;
+
+    [Column("description")]
+    public string? Description { get; set; }
+
+    [Column("control_description")]
+    public string? ControlDescription { get; set; }
+
+    [Column("meta_title")]
+    public string? MetaTitle { get; set; }
+
+    [Column("meta_description")]
+    public string? MetaDescription { get; set; }
 }

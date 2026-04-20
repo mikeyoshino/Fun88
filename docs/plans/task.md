@@ -1,11 +1,11 @@
 # Fun88 Plan 1 Tasks
 
-- [ ] Task 1: Solution + Project Scaffold
-- [ ] Task 2: Shared Constants
-- [ ] Task 3: Typed Configuration (Options)
-- [ ] Task 4: EF Core Entities
-- [ ] Task 5: AppDbContext + Entity Configurations + Migration
-- [ ] Task 6: Category Repository
+- [x] Task 1: Solution + Project Scaffold
+- [x] Task 2: Shared Constants
+- [x] Task 3: Typed Configuration (Options)
+- [x] Task 4: EF Core Entities
+- [x] Task 5: AppDbContext + Entity Configurations + Migration
+- [x] Task 6: Category Repository
 - [ ] Task 7: Game Repository + GameQueryService
 - [ ] Task 8: IGameProvider + RawGameData + GameDistributionHttpClient
 - [ ] Task 9: GameDistributionProvider

@@ -1,14 +1,30 @@
 namespace Fun88.Web.Infrastructure.Data.Entities;
 
-public class TranslationJob
-{
-    public Guid GameId { get; set; }
-    public string LanguageCode { get; set; } = string.Empty;
-    public string Status { get; set; } = "pending";          // "pending"|"completed"|"failed"
-    public short AttemptCount { get; set; }
-    public string? LastError { get; set; }
-    public DateTimeOffset CreatedAt { get; set; }
-    public DateTimeOffset? CompletedAt { get; set; }
+using Postgrest.Attributes;
+using Postgrest.Models;
+using System;
 
-    public Game Game { get; set; } = null!;
+[Table("translation_jobs")]
+public class TranslationJob : BaseModel
+{
+    [PrimaryKey("game_id", false)]
+    public Guid GameId { get; set; }
+
+    [PrimaryKey("language_code", false)]
+    public string LanguageCode { get; set; } = string.Empty;
+
+    [Column("status")]
+    public string Status { get; set; } = "pending";
+
+    [Column("attempt_count")]
+    public short AttemptCount { get; set; }
+
+    [Column("last_error")]
+    public string? LastError { get; set; }
+
+    [Column("created_at")]
+    public DateTime CreatedAt { get; set; }
+
+    [Column("completed_at")]
+    public DateTime? CompletedAt { get; set; }
 }

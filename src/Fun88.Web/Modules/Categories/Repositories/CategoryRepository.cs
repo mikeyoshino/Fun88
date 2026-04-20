@@ -1,34 +1,44 @@
 namespace Fun88.Web.Modules.Categories.Repositories;
 
-using Microsoft.EntityFrameworkCore;
-using Fun88.Web.Infrastructure.Data;
 using Fun88.Web.Infrastructure.Data.Entities;
 using Fun88.Web.Modules.Categories.ViewModels;
+using Supabase;
 
-public class CategoryRepository(AppDbContext db) : ICategoryRepository
+public class CategoryRepository(Client supabaseClient) : ICategoryRepository
 {
     public async Task<IReadOnlyList<CategoryViewModel>> GetAllCategoriesAsync(string languageCode, CancellationToken ct = default)
     {
-        return await db.Categories
-            .Where(c => c.IsActive)
-            .OrderBy(c => c.SortOrder)
-            .Select(c => new CategoryViewModel
+        var response = await supabaseClient.From<Category>()
+            .Filter("is_active", Postgrest.Constants.Operator.Equals, true)
+            .Order("sort_order", Postgrest.Constants.Ordering.Ascending)
+            .Select("id, slug, icon, sort_order, category_translations(name, language_code)")
+            .Get(ct);
+
+        var categories = response.Models;
+
+        var result = new List<CategoryViewModel>();
+        foreach (var c in categories)
+        {
+            var translation = c.Translations?.FirstOrDefault(t => t.LanguageCode == languageCode);
+            result.Add(new CategoryViewModel
             {
                 Id = c.Id,
                 Slug = c.Slug,
                 Icon = c.Icon,
-                Name = c.Translations
-                        .Where(t => t.LanguageCode == languageCode)
-                        .Select(t => t.Name)
-                        .FirstOrDefault() ?? c.Slug
-            })
-            .ToListAsync(ct);
+                Name = translation?.Name ?? c.Slug
+            });
+        }
+
+        return result;
     }
 
     public async Task<Category?> GetBySlugAsync(string slug, CancellationToken ct = default)
     {
-        return await db.Categories
-            .Include(c => c.Translations)
-            .FirstOrDefaultAsync(c => c.Slug == slug, ct);
+        var response = await supabaseClient.From<Category>()
+            .Select("id, slug, icon, sort_order, category_translations(name, language_code)")
+            .Filter("slug", Postgrest.Constants.Operator.Equals, slug)
+            .Single(ct);
+
+        return response;
     }
 }
