@@ -1,0 +1,29 @@
+# Fun88 Plan 1 Tasks
+
+- [ ] Task 1: Solution + Project Scaffold
+- [ ] Task 2: Shared Constants
+- [ ] Task 3: Typed Configuration (Options)
+- [ ] Task 4: EF Core Entities
+- [ ] Task 5: AppDbContext + Entity Configurations + Migration
+- [ ] Task 6: Category Repository
+- [ ] Task 7: Game Repository + GameQueryService
+- [ ] Task 8: IGameProvider + RawGameData + GameDistributionHttpClient
+- [ ] Task 9: GameDistributionProvider
+- [ ] Task 10: GdEmbedUrlBuilder
+- [ ] Task 11: IGameImportPipeline + GameImportPipeline
+- [ ] Task 12: Admin Auth Service + Cookie Scheme
+- [ ] Task 13: Admin Auth Controller + Login View
+- [ ] Task 14: Admin Dashboard + _AdminLayout
+- [ ] Task 15: Admin Games Controller + Views
+- [ ] Task 16: Admin Categories Controller + Views
+- [ ] Task 17: Language Resolution Middleware
+- [ ] Task 18: Security Headers Middleware
+- [ ] Task 19: _Layout.cshtml + site.css
+- [ ] Task 20: HomeController + Home View
+- [ ] Task 21: GamesController (Index + Detail) + Views
+- [ ] Task 22: CategoryController + Category View
+- [ ] Task 23: Language Switch + GDPR Banner
+- [ ] Task 24: game-player.js (GD SDK Events)
+- [ ] Task 25: Program.cs — Full DI Wiring + Middleware Pipeline
+- [ ] Task 26: Docker Setup
+- [ ] Task 27: Seed Initial Data

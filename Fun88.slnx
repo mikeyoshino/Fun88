@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Fun88.Web/Fun88.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Fun88.Tests/Fun88.Tests.csproj" />
+  </Folder>
+</Solution>
