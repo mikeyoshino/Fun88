@@ -33,7 +33,8 @@ Modules/
 │   │   ├── TranslationRequest.cs
 │   │   └── TranslationResult.cs
 │   └── Jobs/
-│       └── TranslationJob.cs              (Quartz IJob)
+│       ├── TranslationJob.cs              (Quartz IJob — single-game, manual retranslation)
+│       └── BulkTranslationJob.cs          (Quartz IJob — batch, fired after each sync run)
 ├── Scraper/
 │   └── Jobs/
 │       └── ScraperJob.cs                  (Quartz IJob — new, replaces manual-only trigger)
@@ -104,64 +105,91 @@ class QuartzOptions
 ```csharp
 interface ITranslationService
 {
+    // Single-game translation — used for manual retranslation from admin panel
     Task<Dictionary<string, string>> TranslateAsync(
         Dictionary<string, string> fields,
         TranslationContext context,
         string targetLanguage,
         CancellationToken ct = default);
+
+    // Batch translation — used during sync runs; chunks internally to respect token limits
+    Task<IReadOnlyList<TranslationResult>> TranslateBatchAsync(
+        IReadOnlyList<TranslationRequest> requests,
+        TranslationContext context,
+        string targetLanguage,
+        CancellationToken ct = default);
 }
+
+record TranslationRequest(string Id, Dictionary<string, string> Fields);
+record TranslationResult(string Id, Dictionary<string, string> TranslatedFields);
 ```
 
-- Takes field name → English value pairs
-- Batches all fields into **one** OpenAI Chat Completions call
-- System prompt (stored as `const string` in `OpenAiTranslationService`):
-  - Game titles and proper nouns: keep in English
-  - Preserve all HTML tags exactly
-  - Use common Thai gaming terminology
-  - Output only valid JSON matching input structure
-- Parses JSON response → returns field name → Thai value pairs
-- If `OpenAiOptions.TranslationEnabled = false`, logs a warning and returns an empty dictionary — callers must not upsert empty results
+**Single-game call:** All fields for one game in one OpenAI Chat Completions request. Used for manual retranslation.
+
+**Batch call:** Splits `requests` into chunks of 20, sends each chunk as one OpenAI request. Request body contains a JSON array — one object per game, keyed by `Id`. Response is parsed back into the same structure. ~20× fewer API calls compared to per-game jobs during sync.
+
+**System prompt** (stored as `const string` in `OpenAiTranslationService`):
+- Game titles and proper nouns: keep in English
+- Preserve all HTML tags exactly
+- Use common Thai gaming terminology
+- Output only valid JSON array matching input structure, same ordering
+
+**Kill-switch:** If `OpenAiOptions.TranslationEnabled = false`, both methods log a warning and return empty results — callers must not upsert empty results.
 
 ### `OpenAiHttpClient`
 
 Typed `HttpClient`:
-- Base address from `OpenAiOptions` (hardcoded to `https://api.openai.com/v1/`)
+- Base address hardcoded to `https://api.openai.com/v1/`
 - `Authorization: Bearer {ApiKey}` default header
 - Timeout: `OpenAiOptions.TranslationTimeoutSeconds`
 - Registered as `services.AddHttpClient<OpenAiHttpClient>()`
 
-### `TranslationJob` (Quartz `IJob`)
+### Jobs
 
+**`BulkTranslationJob` (Quartz `IJob`)** — used after sync runs:
+- Accepts `game_ids` (comma-separated) via `JobDataMap`
+- Flow:
+  1. Load English `game_translations` rows for all game_ids from Supabase
+  2. Build `TranslationRequest` list
+  3. Call `ITranslationService.TranslateBatchAsync(..., TranslationContext.Game, "th")`
+  4. For each result: upsert Thai `game_translations` row, update `translation_jobs` row (status=completed)
+  5. Any failures: update that game's `translation_jobs` row (status=failed, last_error)
+- On total failure: mark all pending rows as failed
+
+**`TranslationJob` (Quartz `IJob`)** — used for single-game manual retranslation:
 - Accepts `game_id` via `JobDataMap`
 - Flow:
-  1. Load English `game_translations` row from Supabase
-  2. Build field dictionary (`title`, `description`, `control_description`)
-  3. Call `ITranslationService.TranslateAsync(..., TranslationContext.Game, "th")`
-  4. Upsert Thai `game_translations` row
-  5. Update `translation_jobs` row: status=completed, completed_at=now
-- On exception: update `translation_jobs` row (status=failed, last_error, attempt_count++)
-- Retry strategy: Quartz `WithSimpleSchedule` — 3 attempts, 5 min → 30 min intervals
+  1. Load English `game_translations` row
+  2. Call `ITranslationService.TranslateAsync(..., TranslationContext.Game, "th")`
+  3. Upsert Thai `game_translations` row
+  4. Update `translation_jobs` row: status=completed, completed_at=now
+- On exception: update row (status=failed, last_error, attempt_count++)
+- Retry: Quartz `WithSimpleSchedule` — 3 attempts, 5 min → 30 min intervals
 
 ### Auto-trigger on import
 
-`GameImportPipeline`, after persisting a game row, schedules a one-shot `TranslationJob`:
+`ScraperJob` (not `GameImportPipeline`) collects all newly imported `game_id`s during the sync run, then after all imports are done schedules one `BulkTranslationJob`:
+
 ```csharp
-if (_openAiOptions.TranslationEnabled)
+if (_openAiOptions.TranslationEnabled && importedGameIds.Count > 0)
 {
+    var jobData = new JobDataMap { ["game_ids"] = string.Join(",", importedGameIds) };
     var trigger = TriggerBuilder.Create().StartNow().Build();
-    await _scheduler.ScheduleJob(jobDetail, trigger, ct);
+    await _scheduler.ScheduleJob(bulkJobDetail.SetJobData(jobData), trigger, ct);
 }
 ```
 
-Also creates a `translation_jobs` row (status=pending) before scheduling.
+`GameImportPipeline.ImportAsync()` creates a `translation_jobs` row (status=pending) per game but does **not** schedule any job — job scheduling is the scraper's responsibility.
+
+For custom game uploads via admin form, `GameImportPipeline` schedules a single-game `TranslationJob` immediately after import (one game = no benefit from batching).
 
 ### Admin panel integration
 
 `/admin/translations` page (new controller `AdminTranslationsController`):
 - Lists `translation_jobs` rows where `status = "failed"` or `status = "pending"`
-- "Retry" button per row → triggers one-shot `TranslationJob` via `IScheduler.TriggerJob`
-- "Retry All Failed" button → bulk trigger
-- Game detail admin edit page: "Re-translate to Thai" button → triggers one-shot job
+- "Retry" button per row → triggers single-game `TranslationJob` via `IScheduler.TriggerJob`
+- "Retry All Failed" button → triggers `BulkTranslationJob` with all failed game_ids
+- Game detail admin edit page: "Re-translate to Thai" button → triggers single-game `TranslationJob`
 
 ---
 
@@ -179,6 +207,7 @@ services.AddQuartz(q =>
     });
     q.AddJob<ScraperJob>(opts => opts.WithIdentity("scraper-gd"));
     q.AddJob<TranslationJob>(opts => opts.StoreDurably());
+    q.AddJob<BulkTranslationJob>(opts => opts.StoreDurably());
 });
 services.AddQuartzHostedService(o => o.WaitForJobsToComplete = true);
 ```
@@ -368,24 +397,36 @@ interface IPlayHistoryService
 ```
 Admin triggers sync (manual or cron)
   → ScraperJob executes
-    → GameDistributionProvider.FetchGamesAsync()
-    → GameImportPipeline.ImportAsync(rawGame)
-      → Validate & normalise
-      → Dedup check (provider_id + provider_game_id)
-      → Persist games row + EN game_translations row
-      → Create translation_jobs row (status=pending)
-      → Scheduler.ScheduleJob(TranslationJob, startNow)   ← if TranslationEnabled
-      → Assign game_categories
+    → GameDistributionProvider.FetchGamesAsync()           ← one API call for all games
+    → for each rawGame:
+        GameImportPipeline.ImportAsync(rawGame)
+          → Validate & normalise
+          → Dedup check (provider_id + provider_game_id)
+          → Persist games row + EN game_translations row
+          → Create translation_jobs row (status=pending)
+          → Assign game_categories
+          → collect game_id into importedGameIds list
     → Update scraper_jobs row (counts)
-  
-  [async, moments later]
-  TranslationJob executes
-    → Load EN game_translations
-    → OpenAiTranslationService.TranslateAsync(fields, Game, "th")
-      → POST https://api.openai.com/v1/chat/completions
-      → Parse JSON response
-    → Upsert TH game_translations
-    → Update translation_jobs row (status=completed)
+    → if TranslationEnabled && importedGameIds.Count > 0:
+        Scheduler.ScheduleJob(BulkTranslationJob { game_ids }, startNow)
+
+  [async, moments later — one job for the entire sync run]
+  BulkTranslationJob executes
+    → Load EN game_translations for all game_ids
+    → Split into chunks of 20
+    → for each chunk:
+        OpenAiTranslationService.TranslateBatchAsync(chunk, Game, "th")
+          → POST https://api.openai.com/v1/chat/completions  (20 games per call)
+          → Parse JSON array response
+        → Upsert TH game_translations for each game in chunk
+        → Update translation_jobs rows (status=completed)
+    → any per-game error: mark that game's row status=failed
+
+[custom upload path — single game, fires immediately]
+Admin uploads custom game
+  → GameImportPipeline.ImportAsync(customGame)
+    → ... (same as above, creates translation_jobs row)
+    → Scheduler.ScheduleJob(TranslationJob { game_id }, startNow)  ← single-game job
 ```
 
 ---
@@ -393,8 +434,9 @@ Admin triggers sync (manual or cron)
 ## 8. Testing
 
 ### Translation
-- `OpenAiTranslationServiceTests` — mock `OpenAiHttpClient`, verify request JSON structure, verify response parsing, verify kill-switch skips API call
+- `OpenAiTranslationServiceTests` — mock `OpenAiHttpClient`, verify single-game request JSON structure, verify batch chunking (21 games → 2 calls), verify response parsing, verify kill-switch returns empty for both methods
 - `TranslationJobTests` — mock `ITranslationService`, verify upsert called on success, verify error state on failure
+- `BulkTranslationJobTests` — mock `ITranslationService`, verify all game rows updated on success, verify per-game failure doesn't abort remaining games in chunk
 
 ### Scheduler
 - `ScraperJobTests` — mock `IGameImportPipeline` + `IGameProvider`, verify job row updated with correct counts
