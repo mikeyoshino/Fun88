@@ -1,0 +1,61 @@
+@model Fun88.Web.Modules.Games.ViewModels.GameDetailViewModel
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div style="max-width:900px;margin:0 auto;">
+    <div class="game-frame-wrapper">
+        <div class="loading-overlay" id="loading-overlay">Loading game…</div>
+        <iframe
+            id="game-iframe"
+            src="@Model.EmbedUrl"
+            data-game-slug="@Model.Slug"
+            allowfullscreen
+            allow="autoplay; fullscreen *; encrypted-media"
+            frameborder="0">
+        </iframe>
+    </div>
+
+    <div style="margin-top:16px;">
+        <h1 style="font-size:20px;font-weight:800;margin-bottom:6px;">@Model.Title</h1>
+        <div style="display:flex;gap:16px;color:#6c6880;font-size:12px;margin-bottom:12px;flex-wrap:wrap;">
+            <span>▶ @Model.PlayCount.ToString("N0") plays</span>
+            <span>♥ @Model.LikeCount.ToString("N0") likes</span>
+            @foreach (var cat in Model.CategoryNames)
+            {
+                <a asp-controller="Category" asp-action="Index" asp-route-slug="@cat.ToLower()" style="color:#a29bfe;">@cat</a>
+            }
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.Description))
+        {
+            <p style="color:#c0bdd8;font-size:13px;line-height:1.6;margin-bottom:12px;">@Model.Description</p>
+        }
+
+        @if (!string.IsNullOrEmpty(Model.ControlDescription))
+        {
+            <p style="color:#6c6880;font-size:12px;margin-bottom:20px;"><strong style="color:#a29bfe;">Controls:</strong> @Model.ControlDescription</p>
+        }
+    </div>
+
+    @if (Model.RelatedGames.Any())
+    {
+        <div class="section">
+            <div class="section-head">
+                <h3>More Like This</h3>
+            </div>
+            <div class="game-row">
+                @foreach (var game in Model.RelatedGames)
+                {
+                    <partial name="_GameCard" model="game" />
+                }
+            </div>
+        </div>
+    }
+
+    @* AdSense placeholder — Plan 3 *@
+</div>
+
+@section Scripts {
+    <script src="~/js/game-player.js" asp-append-version="true"></script>
+}

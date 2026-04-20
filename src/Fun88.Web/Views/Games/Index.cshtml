@@ -1,0 +1,52 @@
+@model IReadOnlyList<Fun88.Web.Modules.Games.ViewModels.GameCardViewModel>
+@{
+    var title = ViewData["Title"]?.ToString() ?? "Games";
+    int page = ViewBag.Page ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
+    var searchQuery = ViewBag.SearchQuery as string;
+}
+
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+    <h2 style="font-size:18px;font-weight:700;">@title</h2>
+    <div style="display:flex;gap:12px;">
+        <a asp-controller="Games" asp-action="Newest" style="font-size:12px;color:#a29bfe;">Newest</a>
+        <a asp-controller="Games" asp-action="MostPopular" style="font-size:12px;color:#a29bfe;">Most Popular</a>
+    </div>
+</div>
+
+@if (searchQuery != null)
+{
+    <p style="color:#6c6880;font-size:13px;margin-bottom:16px;">Results for "@searchQuery"</p>
+}
+
+@if (Model.Any())
+{
+    <div class="game-grid">
+        @foreach (var game in Model)
+        {
+            <partial name="_GameCard" model="game" />
+        }
+    </div>
+}
+else
+{
+    <p style="text-align:center;color:#6c6880;padding:40px;">No games found.</p>
+}
+
+@if (totalPages > 1)
+{
+    <div class="pagination">
+        @if (page > 1)
+        {
+            <a asp-action="@ViewContext.RouteData.Values["action"]" asp-route-page="@(page - 1)">← Prev</a>
+        }
+        @for (int i = Math.Max(1, page - 2); i <= Math.Min(totalPages, page + 2); i++)
+        {
+            <a asp-action="@ViewContext.RouteData.Values["action"]" asp-route-page="@i" class="@(i == page ? "active" : "")">@i</a>
+        }
+        @if (page < totalPages)
+        {
+            <a asp-action="@ViewContext.RouteData.Values["action"]" asp-route-page="@(page + 1)">Next →</a>
+        }
+    </div>
+}
