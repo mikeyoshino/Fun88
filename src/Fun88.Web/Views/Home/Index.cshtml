@@ -1,8 +1,96 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@model Fun88.Web.Modules.Games.ViewModels.HomeViewModel
+@{
+    ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+@* Category chips row *@
+@if (ViewBag.SidebarCategories != null)
+{
+    <div class="chips">
+        @foreach (var cat in (IEnumerable<Fun88.Web.Modules.Categories.ViewModels.CategoryViewModel>)ViewBag.SidebarCategories)
+        {
+            <a asp-controller="Category" asp-action="Index" asp-route-slug="@cat.Slug" class="chip">
+                @cat.Name
+            </a>
+        }
+    </div>
+}
+
+@* Featured / Top Picks row *@
+@if (Model.FeaturedGames.Any())
+{
+    <div class="section">
+        <div class="section-head">
+            <h3>Top Picks</h3>
+            <a asp-controller="Games" asp-action="MostPopular">View more →</a>
+        </div>
+        <div class="game-row">
+            @foreach (var game in Model.FeaturedGames)
+            {
+                <a asp-controller="Games" asp-action="Detail" asp-route-slug="@game.Slug" class="card-lg">
+                    <img src="@game.ThumbnailUrl" alt="@game.Title" style="width:280px;height:180px;object-fit:cover;" loading="lazy" />
+                    <div class="overlay"></div>
+                    <div class="meta"><span class="name">@game.Title</span></div>
+                </a>
+            }
+        </div>
+    </div>
+}
+
+@* New Games row *@
+@if (Model.NewestGames.Any())
+{
+    <div class="section">
+        <div class="section-head">
+            <h3>New Games</h3>
+            <a asp-controller="Games" asp-action="Newest">View more →</a>
+        </div>
+        <div class="game-row">
+            @foreach (var game in Model.NewestGames)
+            {
+                <partial name="_GameCard" model="game" />
+            }
+        </div>
+    </div>
+}
+
+@* Most Popular row *@
+@if (Model.MostPopularGames.Any())
+{
+    <div class="section">
+        <div class="section-head">
+            <h3>Most Popular</h3>
+            <a asp-controller="Games" asp-action="MostPopular">View more →</a>
+        </div>
+        <div class="game-row">
+            @foreach (var game in Model.MostPopularGames)
+            {
+                <partial name="_GameCard" model="game" />
+            }
+        </div>
+    </div>
+}
+
+@* Per-category rows *@
+@foreach (var catSection in Model.CategorySections)
+{
+    <div class="section">
+        <div class="section-head">
+            <h3>@catSection.CategoryName</h3>
+            <a asp-controller="Category" asp-action="Index" asp-route-slug="@catSection.CategorySlug">View more →</a>
+        </div>
+        <div class="game-row">
+            @foreach (var game in catSection.Games)
+            {
+                <partial name="_GameCard" model="game" />
+            }
+        </div>
+    </div>
+}
+
+@if (!Model.FeaturedGames.Any() && !Model.NewestGames.Any() && !Model.MostPopularGames.Any())
+{
+    <div style="text-align:center;padding:60px 20px;color:#6c6880;">
+        <p>No games yet. Import games from the <a asp-controller="AdminGames" asp-action="Index" asp-area="Admin" style="color:#a29bfe;">admin panel</a>.</p>
+    </div>
+}
