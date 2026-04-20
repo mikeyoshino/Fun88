@@ -1,31 +1,222 @@
-html {
-  font-size: 14px;
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0d0b14; color: #fff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+svg { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.sidebar svg { stroke-width: 2.5; }
+
+/* ── FULL-WIDTH TOP NAV ── */
+.top-nav {
+  position: sticky; top: 0; z-index: 100;
+  width: 100%;
+  background: linear-gradient(180deg, #1e1a2e 0%, #16132a 100%);
+  border-bottom: 1px solid #2a2540;
+  display: flex; align-items: center; gap: 14px;
+  padding: 10px 20px; height: 52px;
+}
+.nav-logo { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.nav-logo-icon { width: 30px; height: 30px; background: linear-gradient(135deg,#6c5ce7,#a29bfe); border-radius: 8px; display:flex; align-items:center; justify-content:center; }
+.nav-logo-text { font-weight: 800; font-size: 16px; color: #fff; }
+.hamburger { color: #7c7a96; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; }
+.search-bar {
+  flex: 1; max-width: 500px; margin: 0 auto;
+  background: #0d0b14; border: 1px solid #2a2540; border-radius: 24px;
+  padding: 8px 18px; display: flex; align-items: center; gap: 8px; cursor: text;
+}
+.search-bar span { color: #555; font-size: 13px; }
+.nav-actions { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+.nav-icon-btn { color: #7c7a96; cursor: pointer; display: flex; }
+.btn-login {
+  background: linear-gradient(135deg,#6c5ce7,#a29bfe);
+  color: #fff; padding: 7px 20px; border-radius: 20px;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  box-shadow: 0 2px 12px rgba(108,92,231,0.35); white-space: nowrap;
 }
 
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+/* ── BODY BELOW NAV ── */
+.page-body { display: flex; height: calc(100vh - 52px); overflow: hidden; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 60px;
+  background: linear-gradient(180deg, #1a1729 0%, #13101f 100%);
+  border-right: 1px solid #2a2540;
+  transition: width 0.22s cubic-bezier(.4,0,.2,1);
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex; flex-direction: column;
+}
+.sidebar:hover { width: 230px; }
+
+.nav-section { padding: 8px 0; }
+.nav-divider { border: none; border-top: 1px solid #2a2540; margin: 4px 0; }
+.nav-categories { overflow-y: auto; flex: 1; padding: 4px 0; }
+.nav-categories::-webkit-scrollbar { width: 2px; }
+.nav-categories::-webkit-scrollbar-thumb { background: #2a2540; }
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 0 10px 20px;
+  gap: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  border-left: 3px solid transparent;
+  transition: background 0.15s;
+  width: 230px;
+}
+.nav-item:hover { background: rgba(108,92,231,0.08); }
+.nav-item.active {
+  border-left-color: #6c5ce7;
+  background: rgba(108,92,231,0.12);
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+.nav-item .icon {
+  width: 20px; height: 20px;
+  flex-shrink: 0;
+  color: #7c7a96;
 }
+.nav-item.active .icon { color: #a29bfe; }
 
-html {
+.nav-item .label {
+  font-size: 13px;
+  color: #c0bdd8;
+  opacity: 0;
+  transition: opacity 0.18s ease 0.05s;
+  overflow: hidden;
+}
+.nav-item.active .label { color: #a29bfe; font-weight: 600; }
+.nav-item .label-muted { color: #4a4760; }
+.sidebar:hover .nav-item .label { opacity: 1; }
+
+/* ── MAIN ── */
+.main { flex: 1; overflow-y: auto; padding: 20px; background: #0d0b14; }
+.main::-webkit-scrollbar { width: 6px; }
+.main::-webkit-scrollbar-thumb { background: #2a2540; border-radius: 3px; }
+
+.chips { display: flex; gap: 8px; margin-bottom: 24px; overflow-x: auto; }
+.chips::-webkit-scrollbar { display: none; }
+.chip {
+  background: #1a1729; border: 1px solid #2a2540; border-radius: 20px;
+  padding: 7px 14px; display: flex; align-items: center; gap: 6px;
+  white-space: nowrap; cursor: pointer; font-size: 12px; color: #c0bdd8;
+}
+.chip:hover { border-color: #6c5ce7; }
+
+.section { margin-bottom: 28px; }
+.section-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.section-head h3 { font-size: 15px; font-weight: 700; color: #fff; }
+.section-head a { font-size: 12px; color: #a29bfe; cursor: pointer; }
+
+.game-row { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 4px; }
+.game-row::-webkit-scrollbar { display: none; }
+
+/* ── FEATURED CARDS (large) ── */
+.card-lg {
+  flex-shrink: 0; border-radius: 14px; position: relative;
+  overflow: hidden; cursor: pointer;
+  transition: transform 0.15s;
+}
+.card-lg:hover { transform: scale(1.02); }
+.card-lg .overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.75)); }
+.card-lg .meta { position: absolute; bottom: 12px; left: 12px; }
+.card-lg .meta .name { font-weight: 800; font-size: 16px; color: #fff; }
+
+/* ── STANDARD CARDS ── */
+.card {
+  flex-shrink: 0;
+  width: 180px;
+  cursor: pointer;
+}
+.card .thumb {
+  width: 180px;
+  height: 135px;
+  border-radius: 12px;
+  margin-bottom: 7px;
+  position: relative; overflow: hidden;
+  transition: transform 0.15s;
+}
+.card:hover .thumb { transform: scale(1.03); }
+.card .title { font-size: 12px; font-weight: 600; color: #e0e0e0; margin-bottom: 2px; }
+.card .cat { font-size: 11px; color: #6c6880; }
+
+.badge {
+  position: absolute; top: 7px; left: 7px;
+  font-size: 10px; padding: 2px 7px; border-radius: 4px;
+  font-weight: 700; line-height: 1.4;
+}
+.badge-new { background: #00b894; color: #fff; }
+.badge-hot { background: #e17055; color: #fff; left: auto; right: 7px; }
+.badge-top { background: #fdcb6e; color: #111; left: auto; right: 7px; }
+
+/* ── GAME DETAIL PAGE ── */
+.game-frame-wrapper {
   position: relative;
-  min-height: 100%;
+  width: 100%;
+  padding-top: 56.25%; /* 16:9 */
+  background: #000;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.game-frame-wrapper iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+.loading-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(13,11,20,0.9);
+  color: #a29bfe;
+  font-size: 14px;
+  z-index: 10;
 }
 
-body {
-  margin-bottom: 60px;
+/* ── GAME GRID (category/all games pages) ── */
+.game-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 16px;
+}
+@media (max-width: 1200px) { .game-grid { grid-template-columns: repeat(4, 1fr); } }
+@media (max-width: 768px) { .game-grid { grid-template-columns: repeat(3, 1fr); } }
+
+/* ── PAGINATION ── */
+.pagination { display: flex; gap: 8px; justify-content: center; margin-top: 24px; }
+.pagination a, .pagination span {
+  padding: 6px 12px; border-radius: 8px;
+  background: #1a1729; border: 1px solid #2a2540;
+  color: #c0bdd8; font-size: 13px; text-decoration: none;
+}
+.pagination a:hover { border-color: #6c5ce7; }
+.pagination .active { background: #6c5ce7; border-color: #6c5ce7; color: #fff; }
+
+/* ── FORMS (admin) ── */
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-size: 13px; color: #c0bdd8; margin-bottom: 6px; }
+.form-group input, .form-group textarea, .form-group select {
+  width: 100%; padding: 9px 14px;
+  background: #1a1729; border: 1px solid #2a2540; border-radius: 8px;
+  color: #fff; font-size: 13px;
+}
+.form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+  outline: none; border-color: #6c5ce7;
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
+/* ── UTILITY ── */
+.text-muted { color: #6c6880; }
+.text-accent { color: #a29bfe; }
+.btn-primary {
+  background: linear-gradient(135deg,#6c5ce7,#a29bfe);
+  color: #fff; padding: 9px 20px; border-radius: 8px;
+  font-size: 13px; font-weight: 700; cursor: pointer; border: none;
+  box-shadow: 0 2px 12px rgba(108,92,231,0.35);
 }
-
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
+.btn-primary:hover { opacity: 0.9; }
+.btn-danger {
+  background: #e17055; color: #fff; padding: 9px 20px; border-radius: 8px;
+  font-size: 13px; font-weight: 700; cursor: pointer; border: none;
 }

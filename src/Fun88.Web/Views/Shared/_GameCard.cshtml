@@ -1,0 +1,12 @@
+@model Fun88.Web.Modules.Games.ViewModels.GameCardViewModel
+<div class="card">
+    <a asp-controller="Games" asp-action="Detail" asp-route-slug="@Model.Slug">
+        <div class="thumb">
+            <img src="@Model.ThumbnailUrl" alt="@Model.Title" loading="lazy" style="width:100%;height:100%;object-fit:cover;" />
+            @if (Model.IsNew) { <span class="badge badge-new">NEW</span> }
+            @if (Model.IsHot) { <span class="badge badge-hot">HOT</span> }
+            @if (Model.IsTop && !Model.IsHot) { <span class="badge badge-top">TOP</span> }
+        </div>
+        <p class="title">@Model.Title</p>
+    </a>
+</div>

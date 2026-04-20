@@ -1,50 +1,91 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+@using Fun88.Web.Shared.Extensions
+@{
+    var currentLang = Context.GetCurrentLanguage();
+    var isHome = ViewContext.RouteData.Values["controller"]?.ToString() == "Home";
+    var isGames = ViewContext.RouteData.Values["controller"]?.ToString() == "Games";
+    var isCategory = ViewContext.RouteData.Values["controller"]?.ToString() == "Category";
+}
+<!DOCTYPE html>
+<html lang="@currentLang">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Fun88.Web</title>
-    <script type="importmap"></script>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <title>@ViewData["Title"] - Fun88</title>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/Fun88.Web.styles.css" asp-append-version="true" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Fun88.Web</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2569 - Fun88.Web - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+<nav class="top-nav">
+    <div class="hamburger">
+        <svg width="20" height="20" viewBox="0 0 24 24"><path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+    </div>
+    <a asp-controller="Home" asp-action="Index" class="nav-logo">
+        <div class="nav-logo-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" stroke="#fff"><path d="M5.636 5.636l12.728 12.728M18.364 5.636L5.636 18.364"/></svg>
         </div>
-    </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+        <span class="nav-logo-text">Fun88</span>
+    </a>
+    <form asp-controller="Games" asp-action="Search" method="get" class="search-bar">
+        <svg width="15" height="15" viewBox="0 0 24 24" stroke="#555"><path d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+        <input name="q" type="text" placeholder="Search games and categories" value="@Context.Request.Query["q"]" style="background:none;border:none;color:#fff;font-size:13px;width:100%;outline:none;" />
+    </form>
+    <div class="nav-actions">
+        <div class="nav-icon-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24"><path d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
+        </div>
+        <a asp-controller="AdminAuth" asp-action="Login" asp-area="Admin" class="btn-login">Admin</a>
+    </div>
+</nav>
+
+<div class="page-body">
+    <aside class="sidebar">
+        <div class="nav-section">
+            <a asp-controller="Home" asp-action="Index" class="nav-item @(isHome ? "active" : "")">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>
+                <span class="label">Home</span>
+            </a>
+            <a asp-controller="Games" asp-action="Newest" class="nav-item @(isGames && ViewContext.RouteData.Values["action"]?.ToString() == "Newest" ? "active" : "")">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/></svg>
+                <span class="label">New Games</span>
+            </a>
+            <a asp-controller="Games" asp-action="MostPopular" class="nav-item">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.361-6.867 8.21 8.21 0 003 2.48z"/></svg>
+                <span class="label">Hot Games</span>
+            </a>
+            <a asp-controller="Games" asp-action="Index" class="nav-item @(isGames ? "active" : "")">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M6 6h.008v.008H6V6zm0 6h.008v.008H6V6zm0 6h.008v.008H6V6zm6 0h.008v.008H12V18zm0-6h.008v.008H12V12zm0-6h.008v.008H12V6zm6 6h.008v.008H18V12zm0-6h.008v.008H18V6z"/><path d="M4.5 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM14.25 8.625a3.375 3.375 0 116.75 0 3.375 3.375 0 01-6.75 0zM1.5 19.125a7.125 7.125 0 0114.25 0v.003l-.001.119a.75.75 0 01-.363.63 13.067 13.067 0 01-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 01-.364-.63l-.001-.122zM17.25 19.128l-.001.144a2.25 2.25 0 01-.233.96 10.088 10.088 0 005.06-1.01.75.75 0 00.42-.643 4.875 4.875 0 00-6.957-4.611 8.586 8.586 0 011.71 5.157v.003z"/></svg>
+                <span class="label">All Games</span>
+            </a>
+        </div>
+        <hr class="nav-divider" />
+        <nav class="nav-categories">
+            @if (ViewBag.SidebarCategories != null)
+            {
+                foreach (var cat in (IEnumerable<Fun88.Web.Modules.Categories.ViewModels.CategoryViewModel>)ViewBag.SidebarCategories)
+                {
+                    <a asp-controller="Category" asp-action="Index" asp-route-slug="@cat.Slug" class="nav-item @(isCategory && ViewContext.RouteData.Values["slug"]?.ToString() == cat.Slug ? "active" : "")">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"/></svg>
+                        <span class="label">@cat.Name</span>
+                    </a>
+                }
+            }
+        </nav>
+        <div class="nav-section" style="margin-top:auto;border-top:1px solid #2a2540;">
+            <a href="/language/set?lang=en&returnUrl=@Uri.EscapeDataString(Context.Request.Path + Context.Request.QueryString)" class="nav-item">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M10.5 21l5.25-11.25L21 21m-9-3h7.5M3 5.621a48.474 48.474 0 016-.371m0 0c1.12 0 2.233.038 3.334.114M9 5.25V3m3.334 2.364C11.176 10.658 7.69 15.08 3 17.502m9.334-12.138c.896.061 1.785.147 2.666.257m-4.589 8.495a18.023 18.023 0 01-3.827-5.802"/></svg>
+                <span class="label">@(currentLang == "th" ? "ภาษาไทย" : "English")</span>
+            </a>
+        </div>
+    </aside>
+
+    <main class="main">
+        @RenderBody()
+    </main>
+</div>
+
+@await Html.PartialAsync("_GdprBanner")
+
+<script src="~/js/site.js" asp-append-version="true"></script>
+@await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
