@@ -52,7 +52,7 @@
                 <svg class="icon" viewBox="0 0 24 24"><path d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.361-6.867 8.21 8.21 0 003 2.48z"/></svg>
                 <span class="label">Hot Games</span>
             </a>
-            <a asp-controller="Games" asp-action="Index" class="nav-item @(isGames ? "active" : "")">
+            <a asp-controller="Games" asp-action="Index" class="nav-item @(isGames && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
                 <svg class="icon" viewBox="0 0 24 24"><path d="M6 6h.008v.008H6V6zm0 6h.008v.008H6V6zm0 6h.008v.008H6V6zm6 0h.008v.008H12V18zm0-6h.008v.008H12V12zm0-6h.008v.008H12V6zm6 6h.008v.008H18V12zm0-6h.008v.008H18V6z"/><path d="M4.5 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM14.25 8.625a3.375 3.375 0 116.75 0 3.375 3.375 0 01-6.75 0zM1.5 19.125a7.125 7.125 0 0114.25 0v.003l-.001.119a.75.75 0 01-.363.63 13.067 13.067 0 01-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 01-.364-.63l-.001-.122zM17.25 19.128l-.001.144a2.25 2.25 0 01-.233.96 10.088 10.088 0 005.06-1.01.75.75 0 00.42-.643 4.875 4.875 0 00-6.957-4.611 8.586 8.586 0 011.71 5.157v.003z"/></svg>
                 <span class="label">All Games</span>
             </a>
@@ -71,7 +71,7 @@
             }
         </nav>
         <div class="nav-section" style="margin-top:auto;border-top:1px solid #2a2540;">
-            <a href="/language/set?lang=en&returnUrl=@Uri.EscapeDataString(Context.Request.Path + Context.Request.QueryString)" class="nav-item">
+            <a href="/language/set?lang=@(currentLang == "th" ? "en" : "th")&returnUrl=@Uri.EscapeDataString(Context.Request.Path + Context.Request.QueryString)" class="nav-item">
                 <svg class="icon" viewBox="0 0 24 24"><path d="M10.5 21l5.25-11.25L21 21m-9-3h7.5M3 5.621a48.474 48.474 0 016-.371m0 0c1.12 0 2.233.038 3.334.114M9 5.25V3m3.334 2.364C11.176 10.658 7.69 15.08 3 17.502m9.334-12.138c.896.061 1.785.147 2.666.257m-4.589 8.495a18.023 18.023 0 01-3.827-5.802"/></svg>
                 <span class="label">@(currentLang == "th" ? "ภาษาไทย" : "English")</span>
             </a>
