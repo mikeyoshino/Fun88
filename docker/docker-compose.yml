@@ -1,0 +1,16 @@
+services:
+  fun88-web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      Supabase__Url: ${SUPABASE_URL}
+      Supabase__Key: ${SUPABASE_KEY}
+      GameDistribution__ApiKey: ${GD_API_KEY}
+      GameDistribution__PublisherId: ${GD_PUBLISHER_ID}
+      OpenAi__ApiKey: ${OPENAI_API_KEY}
+    ports:
+      - "8080:8080"
+    restart: unless-stopped

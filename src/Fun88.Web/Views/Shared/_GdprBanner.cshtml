@@ -1,1 +1,40 @@
-@* GDPR banner — implemented in Task 23 *@
+<div id="gdpr-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:1000;background:#1a1729;border-top:1px solid #2a2540;padding:16px 24px;align-items:center;gap:16px;flex-wrap:wrap;">
+    <p style="flex:1;font-size:13px;color:#c0bdd8;min-width:200px;">
+        We use cookies to personalise content and to analyse traffic. By playing games you accept our cookie policy.
+    </p>
+    <div style="display:flex;gap:8px;flex-shrink:0;">
+        <button onclick="gdprAcceptAll()" class="btn-primary" style="padding:7px 16px;font-size:12px;">Accept All</button>
+        <button onclick="gdprRejectAll()" style="padding:7px 16px;font-size:12px;background:#2a2540;color:#c0bdd8;border:1px solid #3a3560;border-radius:8px;cursor:pointer;">Reject All</button>
+    </div>
+</div>
+
+<script>
+(function () {
+    var COOKIE = 'gdpr_consent';
+    var banner = document.getElementById('gdpr-banner');
+
+    function hasCookie() {
+        return document.cookie.split(';').some(function (c) { return c.trim().startsWith(COOKIE + '='); });
+    }
+
+    function setCookie(value) {
+        var exp = new Date();
+        exp.setFullYear(exp.getFullYear() + 1);
+        document.cookie = COOKIE + '=' + value + ';path=/;SameSite=Strict;expires=' + exp.toUTCString();
+    }
+
+    if (!hasCookie() && banner) {
+        banner.style.display = 'flex';
+    }
+
+    window.gdprAcceptAll = function () {
+        setCookie('tracking=1&targeting=1&third_party=1');
+        if (banner) banner.style.display = 'none';
+    };
+
+    window.gdprRejectAll = function () {
+        setCookie('tracking=0&targeting=0&third_party=0');
+        if (banner) banner.style.display = 'none';
+    };
+}());
+</script>
