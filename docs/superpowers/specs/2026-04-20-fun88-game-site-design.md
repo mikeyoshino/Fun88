@@ -50,7 +50,7 @@ Fun88/
 │       │       ├── Services/             # IAdSlotService
 │       │       └── ViewModels/
 │       ├── Infrastructure/
-│       │   ├── Data/                     # EF Core DbContext, Migrations
+│       │   ├── Data/                     # Supabase BaseModel classes
 │       │   ├── Clients/                  # Typed HttpClients: GameDistributionHttpClient, OpenAiHttpClient
 │       │   ├── BackgroundServices/       # IHostedService wrappers for Quartz
 │       │   └── Configuration/            # Typed options — zero magic strings
@@ -81,7 +81,7 @@ Fun88/
 
 ## 3. Database Design
 
-PostgreSQL via EF Core 8 on Supabase.
+PostgreSQL via supabase-csharp on Supabase.
 
 ### i18n Principle
 - Every user-facing text field lives in a `*_translations` table with `(entity_id, language_code)` composite PK.
@@ -176,7 +176,7 @@ game_ratings
 admin_users
   id                uuid          PK
   email             varchar(200)  UNIQUE NOT NULL
-  password_hash     text          NOT NULL  (ASP.NET Identity PasswordHasher)
+  -- auth managed by native Supabase auth.users
   display_name      varchar(100)
   created_at        timestamptz
   last_login_at     timestamptz
@@ -300,7 +300,7 @@ Both GameDistribution sync and custom game upload flow through the same pipeline
 1. Validate & normalise raw data
 2. Check duplicate (`provider_game_id` + `provider_id` for GD; `slug` uniqueness for custom)
 3. Upload thumbnail → Supabase Storage
-4. Persist `games` row + English `game_translations` row (EF Core)
+4. Persist `games` row + English `game_translations` row (Supabase SDK)
 5. Enqueue `TranslationJob` → Quartz.NET one-shot
 6. Assign categories
 7. Update `scraper_jobs` record
@@ -483,7 +483,7 @@ Language is **not** in the URL path. `hreflang` meta tags handle SEO.
 - Password reset and email verification delegated entirely to Supabase
 
 ### Admin Users
-- Own `admin_users` table, ASP.NET Identity `PasswordHasher` — never touch Supabase for admin
+- Admin authentication uses native Supabase Auth functionality with session sync to ASP.NET Cookies
 - Separate admin cookie, 8-hour sliding expiry, `HttpOnly; Secure; SameSite=Strict`
 - No "remember me" option
 - `[Authorize(Policy = PolicyNames.AdminOnly)]` on every admin action — no exceptions
@@ -514,7 +514,7 @@ Language is **not** in the URL path. `hreflang` meta tags handle SEO.
 ```
 dotnet run
 ```
-EF Core connects to Supabase PostgreSQL via `ConnectionStrings:Default` in `appsettings.Development.json` (gitignored). No Docker needed locally.
+Supabase C# SDK connects to Supabase API via `Supabase:Url` and `Supabase:Key` in `appsettings.Development.json` (gitignored). No Docker needed locally.
 
 ### Production (Docker)
 ```yaml
@@ -535,7 +535,7 @@ services:
 
 - Single image — no sidecar containers
 - Quartz.NET uses PostgreSQL job store (same Supabase DB)
-- EF Core migrations run at startup via `dbContext.Database.MigrateAsync()`
+- Database schema managed via Supabase Postgres directly (dashboard or CLI), no app migrations.
 - All secrets from environment variables — never baked into image
 
 ---

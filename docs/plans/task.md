@@ -3,16 +3,16 @@
 - [x] Task 1: Solution + Project Scaffold
 - [x] Task 2: Shared Constants
 - [x] Task 3: Typed Configuration (Options)
-- [x] Task 4: EF Core Entities
-- [x] Task 5: AppDbContext + Entity Configurations + Migration
+- [x] Task 4: Supabase PostgREST Models
+- [x] Task 5: Supabase Client Configuration & Schema SQL
 - [x] Task 6: Category Repository
-- [ ] Task 7: Game Repository + GameQueryService
-- [ ] Task 8: IGameProvider + RawGameData + GameDistributionHttpClient
-- [ ] Task 9: GameDistributionProvider
-- [ ] Task 10: GdEmbedUrlBuilder
-- [ ] Task 11: IGameImportPipeline + GameImportPipeline
-- [ ] Task 12: Admin Auth Service + Cookie Scheme
-- [ ] Task 13: Admin Auth Controller + Login View
+- [x] Task 7: Game Repository + GameQueryService
+- [x] Task 8: IGameProvider + RawGameData + GameDistributionHttpClient
+- [x] Task 9: GameDistributionProvider
+- [x] Task 10: GdEmbedUrlBuilder
+- [x] Task 11: IGameImportPipeline + GameImportPipeline
+- [ ] Task 12: Admin Auth Service (Supabase Wrapper)
+- [ ] Task 13: Admin Auth Controller (Supabase Login)
 - [ ] Task 14: Admin Dashboard + _AdminLayout
 - [ ] Task 15: Admin Games Controller + Views
 - [ ] Task 16: Admin Categories Controller + Views

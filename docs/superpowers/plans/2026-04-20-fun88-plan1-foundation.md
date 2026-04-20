@@ -4,9 +4,9 @@
 
 **Goal:** Working ASP.NET MVC site where admins can import games from GameDistribution (or upload custom games), and visitors can browse and play them in English and Thai.
 
-**Architecture:** Modular monolith — single `Fun88.Web` MVC project, feature modules under `Modules/`, EF Core 8 + PostgreSQL (Supabase), repository pattern, typed options, zero magic strings.
+**Architecture:** Modular monolith — single `Fun88.Web` MVC project, feature modules under `Modules/`, Supabase C# PostgREST SDK, repository pattern, typed options, zero magic strings.
 
-**Tech Stack:** .NET 8 · ASP.NET MVC · EF Core 8 · Npgsql · xUnit · Moq · HttpClient (typed) · ASP.NET Cookie Auth · ASP.NET Identity PasswordHasher
+**Tech Stack:** .NET 8 · ASP.NET MVC · supabase-csharp · xUnit · Moq · HttpClient (typed) · ASP.NET Cookie Auth for session storage
 
 **Out of scope (Plan 2):** OpenAI translation, Quartz scheduling, public user auth (Supabase), favorites, ratings, likes  
 **Out of scope (Plan 3):** Blog, AdSense, full SEO
@@ -450,7 +450,7 @@ git commit -m "feat: add typed options classes (GameDistribution, OpenAi, AuthCo
 
 ---
 
-### Task 4: EF Core Entities
+### Task 4: Supabase PostgREST Models
 
 **Files:**
 - Create: `src/Fun88.Web/Infrastructure/Data/Entities/` (all entity classes)
@@ -632,17 +632,17 @@ dotnet build src/Fun88.Web
 
 ```bash
 git add src/Fun88.Web/Infrastructure/Data/Entities
-git commit -m "feat: add EF Core entity classes (Game, Category, AdminUser, ScraperJob, TranslationJob)"
+git commit -m "feat: add Supabase PostgREST entity classes"
 ```
 
 ---
 
-### Task 5: AppDbContext + Entity Configurations + Migration
+### Task 5: Supabase Client Configuration & Schema SQL
 
 **Files:**
-- Create: `src/Fun88.Web/Infrastructure/Data/AppDbContext.cs`
+- Create: `docs/supabase/schema.sql`
 
-- [ ] **Step 1: Create `AppDbContext.cs`**
+- [ ] **Step 1: Create `docs/supabase/schema.sql`**
 
 ```csharp
 using Fun88.Web.Infrastructure.Data.Entities;
@@ -742,7 +742,7 @@ Visually confirm tables match the spec schema (games, game_translations, categor
 
 ```bash
 git add src/Fun88.Web/Infrastructure/Data src/Fun88.Web/Program.cs
-git commit -m "feat: AppDbContext with entity configurations and initial EF Core migration"
+git commit -m "feat: Supabase client injection and schema generation"
 ```
 
 ---
@@ -811,7 +811,7 @@ public class CategoryRepository(AppDbContext db) : ICategoryRepository
 
 ```bash
 git add src/Fun88.Web/Modules/Categories/Repositories
-git commit -m "feat: ICategoryRepository + CategoryRepository with EF Core"
+git commit -m "feat: ICategoryRepository + CategoryRepository with Supabase PostgREST"
 ```
 
 ---
@@ -905,7 +905,7 @@ public interface IGameRepository
 
 - [ ] **Step 5: Create `GameRepository.cs`**
 
-EF Core implementation. Always eager-load `Translations` and `GameCategories.Category.Translations`. For search, use `EF.Functions.ILike` for case-insensitive PostgreSQL full-text match on title and description joined to translations.
+Supabase implementation. Always eager-load `Translations` and `GameCategories.Category.Translations`. For search, use `EF.Functions.ILike` for case-insensitive PostgreSQL full-text match on title and description joined to translations.
 
 Key query pattern:
 ```csharp
@@ -1470,7 +1470,7 @@ dotnet test tests/Fun88.Tests --filter "AdminAuthServiceTests"
 
 ```bash
 git add src/Fun88.Web/Modules/Admin/Services tests/Fun88.Tests/Admin
-git commit -m "feat: IAdminAuthService + AdminAuthService with Identity PasswordHasher + tests"
+git commit -m "feat: IAdminAuthService + AdminAuthService with Supabase SDK Auth"
 ```
 
 ---
@@ -2090,7 +2090,7 @@ builder.Services.Configure<OpenAiOptions>(builder.Configuration.GetSection(OpenA
 builder.Services.Configure<AuthCookieOptions>(builder.Configuration.GetSection(AuthCookieOptions.Section));
 
 // Database
-builder.Services.AddDbContext<AppDbContext>(opt =>
+builder.Services.AddScoped<Supabase.Client>();
     opt.UseNpgsql(builder.Configuration.GetConnectionString("Default"))
        .UseSnakeCaseNamingConventions());
 
@@ -2267,7 +2267,7 @@ git commit -m "chore: Docker build + compose for production deployment"
 ### Task 27: Seed Initial Data
 
 **Files:**
-- Create: EF Core seeded migration for base data
+- Create: Raw SQL seed file for Supabase Dashboard
 - Create: Admin user creation script (documented)
 
 - [ ] **Step 1: Create seed migration**

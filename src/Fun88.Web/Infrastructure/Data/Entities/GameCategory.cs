@@ -12,4 +12,7 @@ public class GameCategory : BaseModel
 
     [PrimaryKey("category_id", false)]
     public int CategoryId { get; set; }
+
+    [Reference(typeof(Category))]
+    public Category? Category { get; set; }
 }

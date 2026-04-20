@@ -39,4 +39,10 @@ public class Game : BaseModel
 
     [Column("updated_at")]
     public DateTime UpdatedAt { get; set; }
+
+    [Reference(typeof(GameTranslation))]
+    public List<GameTranslation> Translations { get; set; } = [];
+
+    [Reference(typeof(GameCategory))]
+    public List<GameCategory> GameCategories { get; set; } = [];
 }
