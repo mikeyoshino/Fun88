@@ -1,0 +1,124 @@
+<h2>Section 3: Scraper & Import Pipeline</h2>
+<p class="subtitle">GameDistribution publisher API + custom game manual import — unified through one pipeline</p>
+
+<div class="mockup">
+  <div class="mockup-header">Import Flow — two entry points, one pipeline</div>
+  <div class="mockup-body" style="font-family:monospace;font-size:12px;line-height:1.8;color:#2c3e50;">
+<pre style="margin:0;">
+                    ┌─────────────────────┐     ┌──────────────────────┐
+                    │  GameDistribution   │     │   Custom Game Form   │
+                    │  Publisher API      │     │   (Admin uploads     │
+                    │  (scheduled/manual) │     │    own game zip/URL) │
+                    └────────┬────────────┘     └──────────┬───────────┘
+                             │                             │
+                             ▼                             ▼
+                    ┌────────────────────────────────────────────────┐
+                    │           IGameImportPipeline                  │
+                    │  1. Validate & normalise raw game data         │
+                    │  2. Check duplicate (provider_game_id / slug)  │
+                    │  3. Upload thumbnail → Supabase Storage        │
+                    │  4. Persist game + English translation (EF)    │
+                    │  5. Enqueue translation job → OpenAI           │
+                    │  6. Assign categories                          │
+                    │  7. Update scraper_jobs record                 │
+                    └────────────────────────────────────────────────┘
+                                          │
+                             ┌────────────┴───────────┐
+                             ▼                        ▼
+                    ┌──────────────────┐   ┌────────────────────────┐
+                    │ games row saved  │   │ Translation job queued │
+                    │ provider_id = GD │   │ (Quartz.NET one-shot)  │
+                    │ OR null (custom) │   │ → Thai translation      │
+                    └──────────────────┘   └────────────────────────┘</pre>
+  </div>
+</div>
+
+<div class="mockup" style="margin-top:16px;">
+  <div class="mockup-header">IGameProvider Contract & GameDistribution Implementation</div>
+  <div class="mockup-body" style="font-family:monospace;font-size:12px;line-height:1.8;color:#2c3e50;">
+<pre style="margin:0;">
+interface IGameProvider
+{
+    string ProviderSlug { get; }          // "game-distribution" — constant, never inline string
+    Task&lt;IReadOnlyList&lt;RawGameData&gt;&gt; FetchGamesAsync(
+        GameFetchOptions options,          // pagination, category filter
+        CancellationToken ct);
+    Task&lt;RawGameData?&gt; FetchGameByIdAsync(string providerGameId, CancellationToken ct);
+}
+
+// Only one implementation for now — adding a new provider = one new class
+class GameDistributionProvider : IGameProvider
+{
+    // Uses typed HttpClient (GameDistributionHttpClient)
+    // Publisher API key from GameDistributionOptions (typed config, never hardcoded)
+    // Returns normalised RawGameData — provider quirks stay inside this class
+}
+
+record RawGameData(
+    string ProviderGameId,
+    string Title,
+    string Description,
+    string ControlDescription,
+    string ThumbnailUrl,
+    string GameUrl,
+    IReadOnlyList&lt;string&gt; CategorySlugs
+);</pre>
+  </div>
+</div>
+
+<div class="mockup" style="margin-top:16px;">
+  <div class="mockup-header">Custom Game Import (Own Games)</div>
+  <div class="mockup-body" style="font-family:monospace;font-size:12px;line-height:1.9;color:#2c3e50;">
+<pre style="margin:0;">
+Admin form fields:
+  Title (EN)             — required
+  Description (EN)       — required
+  Controls (EN)          — optional
+  Game URL / Embed code  — required (iframe src or full embed HTML)
+  Thumbnail              — file upload → Supabase Storage
+  Categories             — multi-select from existing categories
+  Auto-translate to Thai — checkbox (default: checked)
+
+provider_id   → NULL  (signals "own game" throughout the system)
+provider_game_id → NULL
+
+After save: same pipeline as scraper
+  → thumbnail upload → persist → enqueue Thai translation (if checked)</pre>
+  </div>
+</div>
+
+<div class="mockup" style="margin-top:16px;">
+  <div class="mockup-header">Quartz.NET Job Architecture</div>
+  <div class="mockup-body" style="font-family:monospace;font-size:12px;line-height:1.9;color:#2c3e50;">
+<pre style="margin:0;">
+Jobs (all implement IJob, registered via DI):
+
+  ScraperJob          — fetches from GameDistribution, runs pipeline for each game
+                        Trigger: cron from scraper_schedules table OR manual admin call
+                        Concurrency: DisallowConcurrentExecution attribute
+                        State: persisted in quartz DB tables (not memory)
+
+  TranslationJob      — calls OpenAI, writes game_translations row for "th"
+                        Trigger: one-shot, fired by pipeline after each game import
+                        Input: game_id passed via JobDataMap (no ambient state)
+                        Retry: 3 attempts with exponential back-off
+
+Admin on-demand trigger:
+  POST /admin/scraper/run  →  IScheduler.TriggerJob(JobKey.ScraperJob)
+  Returns job ID → admin polls /admin/scraper/jobs/{id} for status</pre>
+  </div>
+</div>
+
+<div class="section" style="margin-top:16px;">
+  <h3>Duplicate Prevention Strategy</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px;">
+    <div style="background:#f0f9f0;padding:14px;border-radius:8px;border-left:3px solid #27ae60;">
+      <p class="label">GameDistribution games</p>
+      <p>Check <code>provider_game_id</code> + <code>provider_id</code> before insert. Upsert strategy: update metadata if game already exists (title, thumbnail may change upstream).</p>
+    </div>
+    <div style="background:#f0f9f0;padding:14px;border-radius:8px;border-left:3px solid #27ae60;">
+      <p class="label">Custom games</p>
+      <p>Slug uniqueness enforced at DB level. Admin sees a clear error if slug already exists — no silent overwrites.</p>
+    </div>
+  </div>
+</div>

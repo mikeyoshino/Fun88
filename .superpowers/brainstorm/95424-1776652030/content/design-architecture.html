@@ -1,0 +1,100 @@
+<h2>Section 1: Overall Architecture & Project Structure</h2>
+<p class="subtitle">Modular Monolith — feature modules, clean layers, no magic strings</p>
+
+<div class="mockup">
+  <div class="mockup-header">Solution Layout — Fun88.sln</div>
+  <div class="mockup-body" style="font-family:monospace;font-size:13px;line-height:1.8;">
+    <pre style="margin:0;color:#2c3e50;">
+Fun88/
+├── src/
+│   └── Fun88.Web/                       ← Single ASP.NET MVC project
+│       │
+│       ├── Modules/                      ← Feature modules (SOLID: SRP per module)
+│       │   ├── Games/                    ← Browse, play, search, ratings
+│       │   │   ├── Controllers/
+│       │   │   ├── Services/             ← IGameService, IGameQueryService
+│       │   │   ├── Repositories/         ← IGameRepository
+│       │   │   └── ViewModels/
+│       │   │
+│       │   ├── Scraper/                  ← Auto-import pipeline
+│       │   │   ├── Providers/
+│       │   │   │   ├── IGameProvider.cs  ← Provider contract (OCP)
+│       │   │   │   ├── CrazyGamesProvider.cs
+│       │   │   │   └── GameDistributionProvider.cs
+│       │   │   ├── Services/             ← IScraperOrchestrationService
+│       │   │   └── Jobs/                 ← Quartz.NET scheduled jobs
+│       │   │
+│       │   ├── Translation/              ← OpenAI translation pipeline
+│       │   │   ├── Services/             ← ITranslationService
+│       │   │   └── Models/               ← TranslationRequest/Response
+│       │   │
+│       │   ├── Users/                    ← Auth, profiles, favorites, history
+│       │   │   ├── Controllers/
+│       │   │   ├── Services/             ← IUserService, IFavoriteService
+│       │   │   └── ViewModels/
+│       │   │
+│       │   ├── Admin/                    ← Admin panel (separate Area)
+│       │   │   ├── Controllers/
+│       │   │   └── ViewModels/
+│       │   │
+│       │   ├── Blog/                     ← Posts, categories, SEO
+│       │   │   ├── Controllers/
+│       │   │   ├── Services/             ← IBlogService
+│       │   │   └── ViewModels/
+│       │   │
+│       │   └── Ads/                      ← AdSense slot management
+│       │       ├── Services/             ← IAdSlotService
+│       │       └── ViewModels/
+│       │
+│       ├── Infrastructure/
+│       │   ├── Data/                     ← EF Core DbContext + Migrations
+│       │   ├── Clients/                  ← Typed HttpClients (CrazyGames, GD, OpenAI)
+│       │   ├── BackgroundServices/       ← IHostedService wrappers
+│       │   └── Configuration/            ← Typed settings (no magic strings)
+│       │       ├── ScraperOptions.cs
+│       │       ├── OpenAiOptions.cs
+│       │       ├── SupabaseOptions.cs
+│       │       └── AdSenseOptions.cs
+│       │
+│       └── Shared/
+│           ├── Constants/                ← LanguageCode, RouteNames, PolicyNames
+│           ├── ValueObjects/             ← Slug, LanguageCode (enum)
+│           └── Extensions/              ← IQueryable, IServiceCollection helpers
+│
+├── docker/
+│   ├── Dockerfile
+│   └── docker-compose.yml
+└── docs/
+    └── superpowers/specs/</pre>
+  </div>
+</div>
+
+<div class="section" style="margin-top:20px;">
+  <h3>Key Architectural Decisions</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
+    <div style="background:#f8f9fa;padding:14px;border-radius:8px;border-left:3px solid #3498db;">
+      <p class="label">Data Access</p>
+      <p>EF Core 8 + PostgreSQL (Supabase). Repository pattern per module. No raw SQL except for performance-critical reporting queries.</p>
+    </div>
+    <div style="background:#f8f9fa;padding:14px;border-radius:8px;border-left:3px solid #9b59b6;">
+      <p class="label">Auth</p>
+      <p>Supabase Auth for public users. ASP.NET Identity-backed cookie auth for admin. Supabase JWT validated in middleware.</p>
+    </div>
+    <div style="background:#f8f9fa;padding:14px;border-radius:8px;border-left:3px solid #e67e22;">
+      <p class="label">Scheduling</p>
+      <p>Quartz.NET with database job store (persists to PostgreSQL). Admin triggers on-demand via controller → IScheduler API.</p>
+    </div>
+    <div style="background:#f8f9fa;padding:14px;border-radius:8px;border-left:3px solid #27ae60;">
+      <p class="label">Localisation</p>
+      <p>ASP.NET Core IStringLocalizer for UI strings. Game/blog content stored in <code>*_translations</code> tables, fetched by ISO language code ("en" / "th").</p>
+    </div>
+    <div style="background:#f8f9fa;padding:14px;border-radius:8px;border-left:3px solid #e74c3c;">
+      <p class="label">No Magic Strings</p>
+      <p>All route names, policy names, language codes, cache keys, and config keys are <code>static readonly</code> constants or strongly-typed enums.</p>
+    </div>
+    <div style="background:#f8f9fa;padding:14px;border-radius:8px;border-left:3px solid #1abc9c;">
+      <p class="label">File Storage</p>
+      <p>Supabase Storage for game thumbnails and blog featured images. Typed <code>StorageClient</code> wrapper — no direct SDK calls in controllers.</p>
+    </div>
+  </div>
+</div>

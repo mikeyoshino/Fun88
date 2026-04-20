@@ -1,0 +1,154 @@
+<h2>Section 5: Pages & Routing</h2>
+<p class="subtitle">Public site + Admin area — all routes as typed constants, no magic strings</p>
+
+<div class="mockup">
+  <div class="mockup-header">Public Routes (Controllers/Views)</div>
+  <div class="mockup-body" style="font-family:monospace;font-size:12px;line-height:1.9;color:#2c3e50;">
+<pre style="margin:0;">
+GET  /                              HomeController.Index
+                                    → Featured games, newest, most popular
+                                      grouped by category (like MaxGame home)
+
+GET  /games                         GamesController.Browse
+                                    → All games, paginated, sort by newest/popular
+
+GET  /games/{slug}                  GamesController.Play
+                                    → Game player page with GD iframe embed
+                                      + controls, description, recommended games
+
+GET  /games/category/{categorySlug} GamesController.ByCategory
+                                    → Category page (like "2 Player Games")
+                                      Left sidebar with category list (active highlighted)
+
+GET  /games/newest                  GamesController.Newest
+GET  /games/most-popular            GamesController.MostPopular
+
+GET  /search?q={query}              SearchController.Index
+                                    → Full-text search across game titles (EN + TH)
+
+GET  /blog                          BlogController.Index
+GET  /blog/{slug}                   BlogController.Post
+GET  /blog/category/{slug}          BlogController.ByCategory
+
+GET  /account/login                 AccountController.Login
+GET  /account/register              AccountController.Register
+GET  /account/profile               AccountController.Profile      [Authorize]
+GET  /account/favorites             AccountController.Favorites    [Authorize]
+GET  /account/history               AccountController.History      [Authorize]
+
+POST /account/login                 AccountController.LoginPost
+POST /account/register              AccountController.RegisterPost
+POST /account/logout                AccountController.Logout
+
+POST /games/{slug}/like             GamesController.Like           [Authorize]
+POST /games/{slug}/rate             GamesController.Rate           [Authorize]
+POST /games/{slug}/play             GamesController.RecordPlay     (anonymous OK)</pre>
+  </div>
+</div>
+
+<div class="mockup" style="margin-top:16px;">
+  <div class="mockup-header">Admin Area Routes (Area: "Admin", prefix: /admin)</div>
+  <div class="mockup-body" style="font-family:monospace;font-size:12px;line-height:1.9;color:#2c3e50;">
+<pre style="margin:0;">
+All routes require [Authorize(Policy = PolicyNames.AdminOnly)]
+
+GET  /admin                         Admin/DashboardController.Index
+                                    → Stats: total games, plays today, new users
+
+── Games ──────────────────────────────────────────────────────
+GET  /admin/games                   Admin/GamesController.Index    (paginated list)
+GET  /admin/games/create            Admin/GamesController.Create   (custom game form)
+GET  /admin/games/{id}/edit         Admin/GamesController.Edit
+POST /admin/games/create            Admin/GamesController.CreatePost
+POST /admin/games/{id}/edit         Admin/GamesController.EditPost
+POST /admin/games/{id}/delete       Admin/GamesController.Delete
+POST /admin/games/{id}/retranslate  Admin/GamesController.Retranslate
+
+── Scraper ────────────────────────────────────────────────────
+GET  /admin/scraper                 Admin/ScraperController.Index
+                                    → Schedule config + job history + failed translations
+POST /admin/scraper/run             Admin/ScraperController.Run    (trigger on-demand)
+GET  /admin/scraper/jobs/{id}       Admin/ScraperController.JobStatus (AJAX poll)
+POST /admin/scraper/schedule        Admin/ScraperController.UpdateSchedule
+
+── Categories ─────────────────────────────────────────────────
+GET  /admin/categories              Admin/CategoriesController.Index
+POST /admin/categories/create       Admin/CategoriesController.Create
+POST /admin/categories/{id}/edit    Admin/CategoriesController.Edit
+POST /admin/categories/{id}/delete  Admin/CategoriesController.Delete
+
+── Blog ───────────────────────────────────────────────────────
+GET  /admin/blog                    Admin/BlogController.Index
+GET  /admin/blog/create             Admin/BlogController.Create
+GET  /admin/blog/{id}/edit          Admin/BlogController.Edit
+POST /admin/blog/create             Admin/BlogController.CreatePost
+POST /admin/blog/{id}/edit          Admin/BlogController.EditPost
+POST /admin/blog/{id}/publish       Admin/BlogController.Publish
+POST /admin/blog/{id}/delete        Admin/BlogController.Delete
+
+── Ads ────────────────────────────────────────────────────────
+GET  /admin/ads                     Admin/AdsController.Index
+POST /admin/ads/{id}/edit           Admin/AdsController.Edit
+
+── Users ──────────────────────────────────────────────────────
+GET  /admin/users                   Admin/UsersController.Index
+POST /admin/users/{id}/disable      Admin/UsersController.Disable
+POST /admin/users/{id}/enable       Admin/UsersController.Enable
+
+── Translation ────────────────────────────────────────────────
+GET  /admin/translations            Admin/TranslationsController.Index
+                                    → List failed/pending translation jobs
+POST /admin/translations/retry-all  Admin/TranslationsController.RetryAll
+POST /admin/translations/{id}/retry Admin/TranslationsController.Retry</pre>
+  </div>
+</div>
+
+<div class="mockup" style="margin-top:16px;">
+  <div class="mockup-header">Route Constants — No Magic Strings</div>
+  <div class="mockup-body" style="font-family:monospace;font-size:12px;line-height:1.9;color:#2c3e50;">
+<pre style="margin:0;">
+static class RouteNames
+{
+    public const string Home            = nameof(Home);
+    public const string GamePlay        = nameof(GamePlay);
+    public const string GamesByCategory = nameof(GamesByCategory);
+    public const string GameNewest      = nameof(GameNewest);
+    public const string GameMostPopular = nameof(GameMostPopular);
+    public const string Search          = nameof(Search);
+    // ... all named routes
+}
+
+static class PolicyNames
+{
+    public const string AdminOnly = nameof(AdminOnly);
+    public const string AuthenticatedUser = nameof(AuthenticatedUser);
+}
+
+static class LanguageCode
+{
+    public const string English = "en";
+    public const string Thai    = "th";
+    public static readonly IReadOnlyList&lt;string&gt; Supported = ["en", "th"];
+}</pre>
+  </div>
+</div>
+
+<div class="mockup" style="margin-top:16px;">
+  <div class="mockup-header">Language Switching</div>
+  <div class="mockup-body" style="font-family:monospace;font-size:12px;line-height:1.9;color:#2c3e50;">
+<pre style="margin:0;">
+Language detected in order:
+  1. Authenticated user's preferred_language from DB
+  2. "lang" cookie (set when user clicks EN/TH switcher)
+  3. Accept-Language request header
+  4. Default: "en"
+
+GET /language/set?lang=th&returnUrl=/games/online-strike-assault
+  → Sets lang cookie (HttpOnly: false — JS can read for UI)
+  → Redirects to returnUrl
+  → If logged in: also updates users.preferred_language in DB
+
+URL structure: language is NOT in the URL path (/th/games/...)
+  → Simpler routing, language resolved per-request from cookie/header</pre>
+  </div>
+</div>

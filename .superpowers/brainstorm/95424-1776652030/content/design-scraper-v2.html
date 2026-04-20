@@ -1,0 +1,117 @@
+<h2>Section 3 (Revised): GameDistribution Publisher Integration</h2>
+<p class="subtitle">Not a scraper — an authenticated catalog sync using your GD Publisher API key</p>
+
+<div class="mockup">
+  <div class="mockup-header">How GD Publisher Integration Actually Works</div>
+  <div class="mockup-body" style="font-family:monospace;font-size:12px;line-height:1.9;color:#2c3e50;">
+<pre style="margin:0;">
+┌─────────────────────────────────────────────────────────────┐
+│  GameDistribution Publisher Account                         │
+│                                                             │
+│  • Publisher API Key  → stored in GameDistributionOptions   │
+│  • Publisher ID       → required in every embed URL         │
+│  • Catalog API        → authenticated REST, returns games   │
+└───────────────────────────┬─────────────────────────────────┘
+                            │ HTTPS + API Key header
+                            ▼
+┌─────────────────────────────────────────────────────────────┐
+│  GameDistributionProvider : IGameProvider                   │
+│                                                             │
+│  FetchGamesAsync() → GET /games/?limit=100&offset=N         │
+│                      Returns: game MD5 ID, title,           │
+│                      description, thumbnail, categories     │
+│                                                             │
+│  Maps to RawGameData → game_url built as:                   │
+│  "https://html5.gamedistribution.com/{MD5_ID}/"             │
+└───────────────────────────┬─────────────────────────────────┘
+                            │
+                            ▼ (same pipeline as before)
+              IGameImportPipeline → DB + Translation</pre>
+  </div>
+</div>
+
+<div class="mockup" style="margin-top:16px;">
+  <div class="mockup-header">Game Player Page — Iframe Embed (Critical Details)</div>
+  <div class="mockup-body" style="font-family:monospace;font-size:12px;line-height:1.9;color:#2c3e50;">
+<pre style="margin:0;">
+The iframe src is built server-side (never hardcoded inline):
+
+  https://html5.gamedistribution.com/{game.ProviderGameId}/
+    ?gd_sdk_referrer_url=https://yoursite.com/games/{game.Slug}
+    &gdpr-tracking={consentTracking}       ← from user's cookie consent
+    &gdpr-targeting={consentTargeting}     ← from user's cookie consent
+    &gdpr-third-party={consentThirdParty}  ← from user's cookie consent
+
+Built by: GdEmbedUrlBuilder (typed service, no string concatenation in views)
+
+GDPR consent state:
+  • Stored in a separate HttpOnly consent cookie
+  • Set when user accepts/rejects cookie banner on first visit
+  • Read server-side when rendering the game player page
+  • 0 = rejected, 1 = accepted — defaults to 0 (privacy-first)
+
+For custom/own games:
+  • game_url is the raw iframe src or full embed HTML stored at import
+  • No GD parameters needed — rendered as-is</pre>
+  </div>
+</div>
+
+<div class="mockup" style="margin-top:16px;">
+  <div class="mockup-header">GD SDK postMessage Events (page must handle these)</div>
+  <div class="mockup-body" style="font-family:monospace;font-size:12px;line-height:1.9;color:#2c3e50;">
+<pre style="margin:0;">
+GD's SDK inside the game fires postMessage events to the parent page.
+Our game player page listens and responds:
+
+  SDK_GAME_START     → game loaded, remove loading overlay
+  SDK_GAME_PAUSE     → ad is about to show, blur/mute game controls
+  SDK_GAME_RESUME    → ad finished, restore game controls
+  SDK_ERROR          → game failed to load, show error state
+
+Handled in: /wwwroot/js/game-player.js  (vanilla JS, no framework deps)
+No inline event logic in Razor views — all in the dedicated script file.</pre>
+  </div>
+</div>
+
+<div class="mockup" style="margin-top:16px;">
+  <div class="mockup-header">Revenue Streams — Two Separate, Don't Confuse</div>
+  <div class="mockup-body" style="font-family:monospace;font-size:12px;line-height:1.9;color:#2c3e50;">
+<pre style="margin:0;">
+┌──────────────────────────────┬───────────────────────────────┐
+│  IN-GAME ADS (GD revenue)    │  PAGE ADS (AdSense revenue)   │
+├──────────────────────────────┼───────────────────────────────┤
+│ Managed entirely by GD SDK   │ Managed by our AdSense slots  │
+│ inside the game iframe       │ around the game iframe        │
+│                              │                               │
+│ 33% revenue share → you      │ 100% revenue → you            │
+│ No code needed from us       │ Slot IDs stored in ad_slots   │
+│ Paid by GD monthly           │ Paid by Google monthly        │
+└──────────────────────────────┴───────────────────────────────┘
+
+Custom/own games: no GD in-game ads — only page-level AdSense</pre>
+  </div>
+</div>
+
+<div class="section" style="margin-top:16px;">
+  <h3>Config — Strongly Typed, Never Magic Strings</h3>
+  <div style="background:#f8f9fa;padding:16px;border-radius:8px;font-family:monospace;font-size:12px;line-height:1.8;">
+<pre style="margin:0;">
+class GameDistributionOptions          // bound from appsettings.json
+{
+    public string PublisherApiKey { get; init; }
+    public string PublisherId { get; init; }
+    public string CatalogApiBaseUrl { get; init; }  // "https://catalog.gamedistribution.com"
+    public string EmbedBaseUrl { get; init; }       // "https://html5.gamedistribution.com"
+    public int CatalogPageSize { get; init; }       // default: 100
+}
+
+class GdprConsentOptions
+{
+    public string CookieName { get; init; }         // "gdpr_consent"
+    public int CookieExpiryDays { get; init; }      // 365
+}
+
+// Never: var url = "https://html5.gamedistribution.com/" + gameId;
+// Always: _gdEmbedUrlBuilder.Build(game, consentContext)</pre>
+  </div>
+</div>

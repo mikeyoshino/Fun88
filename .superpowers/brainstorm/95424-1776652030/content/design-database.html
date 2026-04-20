@@ -1,0 +1,186 @@
+<h2>Section 2: Database Design</h2>
+<p class="subtitle">PostgreSQL via EF Core 8 — proper i18n with translations tables, no nullable localised columns</p>
+
+<div class="mockup">
+  <div class="mockup-header">Core: Games & Localisation</div>
+  <div class="mockup-body" style="font-family:monospace;font-size:12px;line-height:1.9;color:#2c3e50;">
+<pre style="margin:0;">
+── games ─────────────────────────────────────────────────────
+  id                  uuid          PK
+  slug                varchar(200)  UNIQUE NOT NULL
+  provider_id         int           FK → game_providers.id
+  provider_game_id    varchar(200)  NOT NULL  (external ID)
+  game_url            text          NOT NULL  (iframe/embed URL)
+  thumbnail_url       text          NOT NULL
+  play_count          bigint        DEFAULT 0
+  like_count          bigint        DEFAULT 0
+  is_active           bool          DEFAULT true
+  created_at          timestamptz   NOT NULL
+  updated_at          timestamptz   NOT NULL
+
+── game_translations ─────────────────────────────────────────
+  game_id             uuid          FK → games.id
+  language_code       varchar(5)    NOT NULL  ("en" | "th")
+  title               varchar(300)  NOT NULL
+  description         text
+  control_description text
+  meta_title          varchar(160)
+  meta_description    varchar(320)
+  PRIMARY KEY (game_id, language_code)
+
+── categories ────────────────────────────────────────────────
+  id                  int           PK
+  slug                varchar(100)  UNIQUE NOT NULL
+  icon                varchar(100)  (CSS class or emoji key constant)
+  sort_order          int           DEFAULT 0
+  is_active           bool          DEFAULT true
+
+── category_translations ─────────────────────────────────────
+  category_id         int           FK → categories.id
+  language_code       varchar(5)    NOT NULL
+  name                varchar(100)  NOT NULL
+  PRIMARY KEY (category_id, language_code)
+
+── game_categories ───────────────────────────────────────────
+  game_id             uuid          FK → games.id
+  category_id         int           FK → categories.id
+  PRIMARY KEY (game_id, category_id)
+
+── game_providers ────────────────────────────────────────────
+  id                  int           PK
+  name                varchar(100)  NOT NULL   ("CrazyGames", "GameDistribution")
+  slug                varchar(100)  UNIQUE NOT NULL
+  api_base_url        text          NOT NULL
+  is_active           bool          DEFAULT true</pre>
+  </div>
+</div>
+
+<div class="mockup" style="margin-top:16px;">
+  <div class="mockup-header">Users, Engagement & Auth</div>
+  <div class="mockup-body" style="font-family:monospace;font-size:12px;line-height:1.9;color:#2c3e50;">
+<pre style="margin:0;">
+── users ─────────────────────────────────────────────────────
+  id                  uuid          PK  (mirrors Supabase Auth UID)
+  username            varchar(50)   UNIQUE NOT NULL
+  display_name        varchar(100)
+  avatar_url          text
+  preferred_language  varchar(5)    DEFAULT 'en'
+  created_at          timestamptz   NOT NULL
+
+── user_favorites ────────────────────────────────────────────
+  user_id             uuid          FK → users.id
+  game_id             uuid          FK → games.id
+  created_at          timestamptz   NOT NULL
+  PRIMARY KEY (user_id, game_id)
+
+── user_play_history ─────────────────────────────────────────
+  id                  uuid          PK
+  user_id             uuid          FK → users.id (nullable for guests)
+  game_id             uuid          FK → games.id
+  played_at           timestamptz   NOT NULL
+  session_id          varchar(64)   (anonymous guest tracking via cookie)
+
+── game_ratings ──────────────────────────────────────────────
+  user_id             uuid          FK → users.id
+  game_id             uuid          FK → games.id
+  rating              smallint      NOT NULL  CHECK (1–5)
+  created_at          timestamptz
+  PRIMARY KEY (user_id, game_id)
+
+── admin_users ───────────────────────────────────────────────
+  id                  uuid          PK
+  email               varchar(200)  UNIQUE NOT NULL
+  password_hash       text          NOT NULL  (ASP.NET Identity hashing)
+  display_name        varchar(100)
+  created_at          timestamptz
+  last_login_at       timestamptz</pre>
+  </div>
+</div>
+
+<div class="mockup" style="margin-top:16px;">
+  <div class="mockup-header">Scraper, Blog & Ads</div>
+  <div class="mockup-body" style="font-family:monospace;font-size:12px;line-height:1.9;color:#2c3e50;">
+<pre style="margin:0;">
+── scraper_jobs ──────────────────────────────────────────────
+  id                  uuid          PK
+  provider_id         int           FK → game_providers.id
+  triggered_by        varchar(20)   ("schedule" | "manual")
+  status              varchar(20)   ("pending"|"running"|"completed"|"failed")
+  games_found         int
+  games_imported      int
+  games_skipped       int
+  error_message       text
+  started_at          timestamptz
+  completed_at        timestamptz
+
+── scraper_schedules ─────────────────────────────────────────
+  provider_id         int           PK  FK → game_providers.id
+  cron_expression     varchar(100)  NOT NULL   ("0 2 * * *" = 2am daily)
+  is_enabled          bool          DEFAULT true
+  last_run_at         timestamptz
+  next_run_at         timestamptz
+
+── blog_posts ────────────────────────────────────────────────
+  id                  uuid          PK
+  slug                varchar(200)  UNIQUE NOT NULL
+  featured_image_url  text
+  author_id           uuid          FK → admin_users.id
+  status              varchar(20)   ("draft"|"scheduled"|"published")
+  published_at        timestamptz
+  created_at          timestamptz
+
+── blog_post_translations ────────────────────────────────────
+  post_id             uuid          FK → blog_posts.id
+  language_code       varchar(5)    NOT NULL
+  title               varchar(300)  NOT NULL
+  body                text          NOT NULL  (rich text / HTML)
+  excerpt             varchar(500)
+  meta_title          varchar(160)
+  meta_description    varchar(320)
+  PRIMARY KEY (post_id, language_code)
+
+── blog_categories ───────────────────────────────────────────
+  id                  int           PK
+  slug                varchar(100)  UNIQUE NOT NULL
+
+── blog_category_translations ────────────────────────────────
+  category_id         int           FK → blog_categories.id
+  language_code       varchar(5)    NOT NULL
+  name                varchar(100)  NOT NULL
+  PRIMARY KEY (category_id, language_code)
+
+── blog_post_categories ──────────────────────────────────────
+  post_id             uuid          FK → blog_posts.id
+  category_id         int           FK → blog_categories.id
+  PRIMARY KEY (post_id, category_id)
+
+── ad_slots ──────────────────────────────────────────────────
+  id                  int           PK
+  position            varchar(50)   NOT NULL  (enum constant: "header"|"sidebar"|"in_game"|"footer")
+  adsense_slot_id     varchar(100)
+  adsense_client_id   varchar(100)
+  is_active           bool          DEFAULT true</pre>
+  </div>
+</div>
+
+<div class="section" style="margin-top:16px;">
+  <h3>i18n Design Principles</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px;">
+    <div style="background:#f0f9f0;padding:14px;border-radius:8px;border-left:3px solid #27ae60;">
+      <p class="label">What goes in translations tables</p>
+      <p>Any user-facing text: title, description, controls, meta tags, blog body. If a human reads it, it has a translation row.</p>
+    </div>
+    <div style="background:#f0f9f0;padding:14px;border-radius:8px;border-left:3px solid #27ae60;">
+      <p class="label">What stays in the base table</p>
+      <p>Technical data shared across languages: slug, URLs, play counts, timestamps, provider IDs, active flags.</p>
+    </div>
+    <div style="background:#fef9e7;padding:14px;border-radius:8px;border-left:3px solid #f39c12;">
+      <p class="label">Language fallback rule</p>
+      <p>If Thai translation missing → fall back to English silently. Never show a blank field. EF Core query: <code>WHERE language_code = @lang OR language_code = 'en'</code>, ordered by preference.</p>
+    </div>
+    <div style="background:#fef9e7;padding:14px;border-radius:8px;border-left:3px solid #f39c12;">
+      <p class="label">Language detection</p>
+      <p>Browser's <code>Accept-Language</code> header on first visit → stored in cookie. User can override via language switcher. <code>preferred_language</code> persisted in user profile.</p>
+    </div>
+  </div>
+</div>

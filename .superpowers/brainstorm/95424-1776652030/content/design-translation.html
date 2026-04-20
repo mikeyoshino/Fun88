@@ -1,0 +1,134 @@
+<h2>Section 4: Translation Pipeline</h2>
+<p class="subtitle">OpenAI auto-translation — English → Thai, triggered on every import, retried on failure</p>
+
+<div class="mockup">
+  <div class="mockup-header">Translation Flow</div>
+  <div class="mockup-body" style="font-family:monospace;font-size:12px;line-height:1.9;color:#2c3e50;">
+<pre style="margin:0;">
+After game saved with English translation:
+
+  Quartz.NET fires TranslationJob(game_id)
+          │
+          ▼
+  ITranslationService.TranslateGameAsync(gameId, LanguageCode.Thai)
+          │
+          ├─ Load English game_translations row from DB
+          │
+          ├─ Build TranslationRequest:
+          │     Fields: title, description, control_description,
+          │             meta_title, meta_description
+          │     Batched into ONE OpenAI request (not 5 separate calls)
+          │
+          ├─ POST to OpenAI Chat Completions API
+          │     Model: gpt-4o-mini  (cost-effective for translation)
+          │     System prompt: instructs JSON output, gaming terminology,
+          │                    preserve HTML tags, preserve game names
+          │
+          ├─ Parse structured JSON response → TranslationResult
+          │
+          └─ Upsert game_translations row (language_code = "th")
+                  On conflict (game_id, "th") → UPDATE fields</pre>
+  </div>
+</div>
+
+<div class="mockup" style="margin-top:16px;">
+  <div class="mockup-header">OpenAI Request Design — One Batch, Structured Output</div>
+  <div class="mockup-body" style="font-family:monospace;font-size:12px;line-height:1.9;color:#2c3e50;">
+<pre style="margin:0;">
+System prompt (stored as constant, never inline):
+  "You are a professional Thai translator specialising in HTML5 gaming content.
+   Translate the following JSON fields from English to Thai.
+   Rules:
+   - Game titles and proper nouns: keep in English
+   - Preserve all HTML tags exactly as-is
+   - Gaming terminology: use common Thai gaming terms
+   - Output ONLY valid JSON matching the exact input structure
+   - Never add explanations or extra fields"
+
+User message:
+  {
+    "title": "Online Strike Assault",
+    "description": "A third-person shooter...",
+    "control_description": "WASD to move...",
+    "meta_title": "Play Online Strike Assault Free",
+    "meta_description": "Play Online Strike Assault..."
+  }
+
+Response (parsed to TranslationResult record):
+  {
+    "title": "Online Strike Assault",       ← game name kept in EN
+    "description": "เกมยิงบุคคลที่สาม...",
+    "control_description": "WASD เพื่อเดิน...",
+    "meta_title": "เล่น Online Strike Assault ฟรี",
+    "meta_description": "เล่น Online Strike Assault..."
+  }</pre>
+  </div>
+</div>
+
+<div class="mockup" style="margin-top:16px;">
+  <div class="mockup-header">Retry Strategy & Error Handling</div>
+  <div class="mockup-body" style="font-family:monospace;font-size:12px;line-height:1.9;color:#2c3e50;">
+<pre style="margin:0;">
+TranslationJob retry policy (configured in Quartz, not in application code):
+  Attempt 1  → immediate
+  Attempt 2  → 5 min delay    (OpenAI rate limit / transient error)
+  Attempt 3  → 30 min delay
+  Attempt 4  → give up → mark game_translations.th as "pending_manual"
+
+Failure tracking:
+  translation_jobs table:
+    game_id          uuid
+    language_code    varchar(5)
+    status           "pending" | "completed" | "failed"
+    attempt_count    smallint
+    last_error       text
+    created_at       timestamptz
+    completed_at     timestamptz
+
+Admin panel shows failed translations → button to retry individually or bulk-retry all failed
+
+Manual override:
+  Admin can edit Thai translations directly in admin panel
+  (useful for game names or special cases where AI mistranslates)</pre>
+  </div>
+</div>
+
+<div class="mockup" style="margin-top:16px;">
+  <div class="mockup-header">Blog Post Translation — Same Service, Different Caller</div>
+  <div class="mockup-body" style="font-family:monospace;font-size:12px;line-height:1.9;color:#2c3e50;">
+<pre style="margin:0;">
+ITranslationService is generic — not coupled to games:
+
+  TranslateAsync(
+    fields: Dictionary&lt;string, string&gt;,   // field name → EN value
+    targetLanguage: LanguageCode,
+    context: TranslationContext            // "game" | "blog" | "category"
+  ) → Dictionary&lt;string, string&gt;          // field name → translated value
+
+Blog admin: "Auto-translate to Thai" button on post edit page
+  → calls same service inline (synchronous for admin, small content)
+  → immediately shows Thai preview before saving
+
+Category names: translated at creation time, editable in admin</pre>
+  </div>
+</div>
+
+<div class="section" style="margin-top:16px;">
+  <h3>Config & Cost Controls</h3>
+  <div style="background:#f8f9fa;padding:16px;border-radius:8px;font-family:monospace;font-size:12px;line-height:1.8;">
+<pre style="margin:0;">
+class OpenAiOptions
+{
+    public string ApiKey { get; init; }           // from env var, never appsettings
+    public string Model { get; init; }            // "gpt-4o-mini"
+    public int MaxTokensPerRequest { get; init; } // 1000 — guards runaway costs
+    public int TranslationTimeoutSeconds { get; init; } // 30
+    public bool TranslationEnabled { get; init; } // kill-switch for billing emergencies
+}
+
+Cost estimate:
+  gpt-4o-mini: ~$0.15/1M input tokens, ~$0.60/1M output tokens
+  Average game: ~300 tokens in + ~300 tokens out = ~$0.000135 per game
+  10,000 games imported = ~$1.35 total translation cost</pre>
+  </div>
+</div>

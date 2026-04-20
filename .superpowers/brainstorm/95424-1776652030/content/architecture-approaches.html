@@ -1,0 +1,89 @@
+<h2>Architecture Approaches</h2>
+<p class="subtitle">Three ways to structure your HTML5 game platform — pick the one that fits best</p>
+
+<div class="options">
+
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Modular Monolith <span style="color:#27ae60;font-size:12px;font-weight:700;margin-left:8px;">★ RECOMMENDED</span></h3>
+      <p>Single ASP.NET MVC app with <strong>feature-based module folders</strong> (Games, Admin, Blog, Users, Scraper). Scraper runs as an <strong>IHostedService + Quartz.NET</strong> inside the same process. Supabase handles auth &amp; file storage; EF Core + PostgreSQL owns all domain data.</p>
+      <div class="pros-cons">
+        <div class="pros">
+          <h4>Pros</h4>
+          <ul>
+            <li>One codebase, one Docker image</li>
+            <li>Simple local dev — just <code>dotnet run</code></li>
+            <li>Modules share DB transaction context</li>
+            <li>Easy to extract later if needed</li>
+            <li>Quartz.NET gives persistent job scheduling</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h4>Cons</h4>
+          <ul>
+            <li>Scraper failures could impact web requests (mitigated by background service isolation)</li>
+            <li>Scaling web and scraper together (not separately)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Monolith + Separate Worker Service</h3>
+      <p>ASP.NET MVC web app + a dedicated <strong>.NET Worker Service</strong> for scraping and translation. Both share the same PostgreSQL database. Docker Compose links both containers. Admin panel triggers the worker via a lightweight internal HTTP call or shared DB job queue table.</p>
+      <div class="pros-cons">
+        <div class="pros">
+          <h4>Pros</h4>
+          <ul>
+            <li>Scraper fully isolated — crashes don't touch the web app</li>
+            <li>Can scale scraper container independently</li>
+            <li>Clear process boundary</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h4>Cons</h4>
+          <ul>
+            <li>Two projects to maintain and deploy</li>
+            <li>Local dev needs Docker Compose or two terminals</li>
+            <li>Slightly more complex for this scale</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Microservices</h3>
+      <p>Separate services: Web API + MVC Frontend, Scraper Service, Translation Service, User Service. API Gateway in front. Each service has its own database schema. Communication via message bus (e.g., RabbitMQ).</p>
+      <div class="pros-cons">
+        <div class="pros">
+          <h4>Pros</h4>
+          <ul>
+            <li>Maximum isolation and independent scaling</li>
+            <li>Technology flexibility per service</li>
+          </ul>
+        </div>
+        <div class="cons">
+          <h4>Cons</h4>
+          <ul>
+            <li>Massive operational overhead for this use case</li>
+            <li>Distributed tracing, service discovery, network latency</li>
+            <li>Overkill — adds months to delivery with no real benefit at this scale</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="section" style="margin-top:24px;padding:16px;background:#f0f9f0;border-radius:8px;border-left:4px solid #27ae60;">
+  <p class="label">My Recommendation</p>
+  <p><strong>Option A — Modular Monolith.</strong> At this scale, the scraper runs fine as a background hosted service (Quartz.NET handles persistence and scheduling). You get <code>dotnet run</code> simplicity locally, one Docker image in production, and a clean module structure that could be extracted into Option B later if traffic demands it. The complexity of Option B is only justified when the scraper needs to scale independently from the web tier — unlikely at launch.</p>
+</div>

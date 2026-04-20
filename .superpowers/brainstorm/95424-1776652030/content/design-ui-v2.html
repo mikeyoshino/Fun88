@@ -1,0 +1,310 @@
+<h2>Section 6 (Revised): UI Design — Corrected Gradients</h2>
+<p class="subtitle">CrazyGames-accurate dark purple gradient nav — each sidebar icon has its own vibrant gradient</p>
+
+<!-- COLOR TOKENS -->
+<div class="section">
+  <h3>Corrected Design Tokens</h3>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px;">
+    <div style="padding:12px;border-radius:8px;border:1px solid #333;background:#0d0b14;">
+      <div style="width:100%;height:28px;background:#0d0b14;border-radius:4px;margin-bottom:6px;border:1px solid #333;"></div>
+      <p class="label" style="color:#aaa;font-size:9px;">bg-base</p>
+      <code style="color:#ccc;font-size:10px;">#0d0b14</code>
+    </div>
+    <div style="padding:12px;border-radius:8px;border:1px solid #333;background:#0d0b14;">
+      <div style="width:100%;height:28px;background:linear-gradient(180deg,#1e1a2e 0%,#13101f 100%);border-radius:4px;margin-bottom:6px;"></div>
+      <p class="label" style="color:#aaa;font-size:9px;">sidebar/header gradient</p>
+      <code style="color:#ccc;font-size:10px;">#1e1a2e → #13101f</code>
+    </div>
+    <div style="padding:12px;border-radius:8px;border:1px solid #333;background:#0d0b14;">
+      <div style="width:100%;height:28px;background:#1a1729;border-radius:4px;margin-bottom:6px;"></div>
+      <p class="label" style="color:#aaa;font-size:9px;">bg-card</p>
+      <code style="color:#ccc;font-size:10px;">#1a1729</code>
+    </div>
+    <div style="padding:12px;border-radius:8px;border:1px solid #333;background:#0d0b14;">
+      <div style="width:100%;height:28px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);border-radius:4px;margin-bottom:6px;"></div>
+      <p class="label" style="color:#aaa;font-size:9px;">accent-primary</p>
+      <code style="color:#ccc;font-size:10px;">#6c5ce7 → #a29bfe</code>
+    </div>
+  </div>
+
+  <div style="margin-top:10px;">
+    <p class="label" style="color:#aaa;margin-bottom:8px;">Sidebar Icon Gradients (per category)</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <div style="text-align:center;">
+        <div style="width:36px;height:36px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);border-radius:10px;margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:16px;">🏠</div>
+        <div style="color:#aaa;font-size:9px;">Home</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="width:36px;height:36px;background:linear-gradient(135deg,#e17055,#d63031);border-radius:10px;margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:16px;">🔥</div>
+        <div style="color:#aaa;font-size:9px;">Hot</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="width:36px;height:36px;background:linear-gradient(135deg,#00b894,#00cec9);border-radius:10px;margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:16px;">⭐</div>
+        <div style="color:#aaa;font-size:9px;">New</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="width:36px;height:36px;background:linear-gradient(135deg,#e84393,#d63031);border-radius:10px;margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:16px;">⚔️</div>
+        <div style="color:#aaa;font-size:9px;">Action</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="width:36px;height:36px;background:linear-gradient(135deg,#0984e3,#74b9ff);border-radius:10px;margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:16px;">🧩</div>
+        <div style="color:#aaa;font-size:9px;">Puzzle</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="width:36px;height:36px;background:linear-gradient(135deg,#fdcb6e,#e17055);border-radius:10px;margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:16px;">🏎️</div>
+        <div style="color:#aaa;font-size:9px;">Racing</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="width:36px;height:36px;background:linear-gradient(135deg,#00b894,#55efc4);border-radius:10px;margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:16px;">⚽</div>
+        <div style="color:#aaa;font-size:9px;">Sports</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="width:36px;height:36px;background:linear-gradient(135deg,#a29bfe,#fd79a8);border-radius:10px;margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:16px;">🗺️</div>
+        <div style="color:#aaa;font-size:9px;">Adventure</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="width:36px;height:36px;background:linear-gradient(135deg,#636e72,#b2bec3);border-radius:10px;margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:16px;">🔫</div>
+        <div style="color:#aaa;font-size:9px;">Shooting</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="width:36px;height:36px;background:linear-gradient(135deg,#fd79a8,#e84393);border-radius:10px;margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-size:16px;">👾</div>
+        <div style="color:#aaa;font-size:9px;">IO</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HOME PAGE -->
+<div class="mockup" style="margin-top:24px;border:1px solid #2a2540;">
+  <div class="mockup-header" style="background:linear-gradient(180deg,#1e1a2e 0%,#13101f 100%);color:#fff;border-bottom:1px solid #2a2540;">Layout 1: Home Page — Corrected Nav Gradient</div>
+  <div class="mockup-body" style="background:#0d0b14;padding:0;">
+    <div style="display:flex;min-height:520px;">
+
+      <!-- Left Icon Sidebar — with gradient bg and per-category colored icons -->
+      <div style="width:60px;background:linear-gradient(180deg,#1e1a2e 0%,#13101f 100%);display:flex;flex-direction:column;align-items:center;padding:14px 0;gap:6px;flex-shrink:0;border-right:1px solid #2a2540;">
+        <div style="width:36px;height:36px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 8px rgba(108,92,231,0.4);">🏠</div>
+        <div style="width:36px;height:36px;background:linear-gradient(135deg,#e17055,#d63031);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 8px rgba(214,48,49,0.3);">🔥</div>
+        <div style="width:36px;height:36px;background:linear-gradient(135deg,#00b894,#00cec9);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 8px rgba(0,184,148,0.3);">⭐</div>
+        <div style="width:36px;height:36px;background:linear-gradient(135deg,#e84393,#d63031);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 8px rgba(232,67,147,0.3);">⚔️</div>
+        <div style="width:36px;height:36px;background:linear-gradient(135deg,#0984e3,#74b9ff);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 8px rgba(9,132,227,0.3);">🧩</div>
+        <div style="width:36px;height:36px;background:linear-gradient(135deg,#fdcb6e,#e17055);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 8px rgba(253,203,110,0.3);">🏎️</div>
+        <div style="width:36px;height:36px;background:linear-gradient(135deg,#00b894,#55efc4);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 8px rgba(0,184,148,0.3);">⚽</div>
+        <div style="width:36px;height:36px;background:linear-gradient(135deg,#a29bfe,#fd79a8);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 8px rgba(162,155,254,0.3);">🗺️</div>
+        <div style="width:36px;height:36px;background:linear-gradient(135deg,#636e72,#b2bec3);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 8px rgba(99,110,114,0.3);">🔫</div>
+        <div style="width:36px;height:36px;background:linear-gradient(135deg,#fd79a8,#e84393);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 8px rgba(253,121,168,0.3);">👾</div>
+      </div>
+
+      <!-- Main Content -->
+      <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+
+        <!-- Top Header — gradient matching sidebar -->
+        <div style="background:linear-gradient(180deg,#1e1a2e 0%,#16132a 100%);padding:10px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #2a2540;">
+          <div style="font-weight:800;color:#fff;font-size:15px;display:flex;align-items:center;gap:6px;">
+            <span style="background:linear-gradient(135deg,#6c5ce7,#a29bfe);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:18px;">🎮</span>
+            <span>Fun88</span>
+          </div>
+          <div style="flex:1;background:#0d0b14;border:1px solid #2a2540;border-radius:20px;padding:7px 16px;display:flex;align-items:center;gap:8px;max-width:420px;">
+            <span style="color:#555;font-size:13px;">🔍</span>
+            <span style="color:#555;font-size:12px;">Search games and categories</span>
+          </div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:10px;">
+            <span style="color:#888;font-size:18px;cursor:pointer;">🔔</span>
+            <span style="color:#888;font-size:18px;cursor:pointer;">🤍</span>
+            <span style="color:#888;font-size:18px;cursor:pointer;">👤</span>
+            <div style="background:linear-gradient(135deg,#6c5ce7,#a29bfe);color:#fff;padding:7px 18px;border-radius:20px;font-size:12px;font-weight:700;box-shadow:0 2px 12px rgba(108,92,231,0.4);">Log in</div>
+          </div>
+        </div>
+
+        <!-- Category Chips -->
+        <div style="background:linear-gradient(180deg,#16132a 0%,#0f0c1e 100%);padding:10px 16px;display:flex;gap:8px;border-bottom:1px solid #2a2540;overflow-x:auto;">
+          <div style="background:#1a1729;border:1px solid #2a2540;border-radius:20px;padding:7px 14px;display:flex;align-items:center;gap:6px;white-space:nowrap;cursor:pointer;">
+            <span style="font-size:14px;">🏆</span><span style="color:#e0e0e0;font-size:12px;">Be the best</span>
+          </div>
+          <div style="background:#1a1729;border:1px solid #2a2540;border-radius:20px;padding:7px 14px;display:flex;align-items:center;gap:6px;white-space:nowrap;cursor:pointer;">
+            <span style="font-size:14px;">🤝</span><span style="color:#e0e0e0;font-size:12px;">Multiplayer</span>
+          </div>
+          <div style="background:#1a1729;border:1px solid #2a2540;border-radius:20px;padding:7px 14px;display:flex;align-items:center;gap:6px;white-space:nowrap;cursor:pointer;">
+            <span style="font-size:14px;">🧩</span><span style="color:#e0e0e0;font-size:12px;">Puzzle</span>
+          </div>
+          <div style="background:#1a1729;border:1px solid #2a2540;border-radius:20px;padding:7px 14px;display:flex;align-items:center;gap:6px;white-space:nowrap;cursor:pointer;">
+            <span style="font-size:14px;">⚡</span><span style="color:#e0e0e0;font-size:12px;">5-minute fun</span>
+          </div>
+          <div style="background:#1a1729;border:1px solid #2a2540;border-radius:20px;padding:7px 14px;display:flex;align-items:center;gap:6px;white-space:nowrap;cursor:pointer;">
+            <span style="font-size:14px;">🧠</span><span style="color:#e0e0e0;font-size:12px;">Train your brain</span>
+          </div>
+          <div style="background:#1a1729;border:1px solid #2a2540;border-radius:20px;padding:7px 14px;display:flex;align-items:center;gap:6px;white-space:nowrap;cursor:pointer;">
+            <span style="font-size:14px;">⏰</span><span style="color:#e0e0e0;font-size:12px;">Timeless classics</span>
+          </div>
+        </div>
+
+        <!-- Scrollable Content -->
+        <div style="flex:1;padding:16px;background:#0d0b14;overflow-y:auto;">
+
+          <!-- Top picks — large cards -->
+          <div style="margin-bottom:22px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+              <span style="color:#fff;font-weight:700;font-size:14px;">Top picks for you</span>
+              <span style="color:#a29bfe;font-size:12px;cursor:pointer;">View more →</span>
+            </div>
+            <div style="display:flex;gap:10px;">
+              <div style="flex:2;height:130px;background:linear-gradient(135deg,#2d1b69,#11998e);border-radius:12px;position:relative;display:flex;align-items:flex-end;padding:10px;overflow:hidden;">
+                <div style="position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(to bottom,transparent 40%,rgba(0,0,0,0.7));"></div>
+                <div style="position:relative;z-index:1;">
+                  <div style="background:#e17055;color:#fff;font-size:9px;padding:2px 7px;border-radius:4px;font-weight:700;display:inline-block;margin-bottom:4px;">HOT</div>
+                  <div style="color:#fff;font-weight:800;font-size:16px;">bloxd.io</div>
+                </div>
+              </div>
+              <div style="flex:1;height:130px;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:12px;position:relative;overflow:hidden;">
+                <div style="position:absolute;bottom:8px;left:8px;color:#fff;font-size:11px;font-weight:600;">Game 2</div>
+              </div>
+              <div style="flex:1;height:130px;background:linear-gradient(135deg,#f093fb,#f5576c);border-radius:12px;position:relative;overflow:hidden;">
+                <div style="position:absolute;bottom:8px;left:8px;color:#fff;font-size:11px;font-weight:600;">Game 3</div>
+              </div>
+              <div style="flex:1;height:130px;background:linear-gradient(135deg,#4facfe,#00f2fe);border-radius:12px;position:relative;overflow:hidden;">
+                <div style="position:absolute;bottom:8px;left:8px;color:#fff;font-size:11px;font-weight:600;">Game 4</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- New Games -->
+          <div style="margin-bottom:22px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+              <span style="color:#fff;font-weight:700;font-size:14px;">New games</span>
+              <span style="color:#a29bfe;font-size:12px;cursor:pointer;">View more →</span>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <div style="width:130px;flex-shrink:0;">
+                <div style="width:130px;height:98px;background:linear-gradient(135deg,#e17055,#d63031);border-radius:10px;margin-bottom:5px;position:relative;overflow:hidden;">
+                  <div style="position:absolute;top:5px;left:5px;background:#00b894;color:#fff;font-size:9px;padding:2px 5px;border-radius:3px;font-weight:700;">NEW</div>
+                </div>
+                <div style="color:#e0e0e0;font-size:11px;font-weight:600;">Stupidity Test</div>
+                <div style="color:#6c6880;font-size:10px;">Casual</div>
+              </div>
+              <div style="width:130px;flex-shrink:0;">
+                <div style="width:130px;height:98px;background:linear-gradient(135deg,#0984e3,#74b9ff);border-radius:10px;margin-bottom:5px;"></div>
+                <div style="color:#e0e0e0;font-size:11px;font-weight:600;">Train Racer</div>
+                <div style="color:#6c6880;font-size:10px;">Racing</div>
+              </div>
+              <div style="width:130px;flex-shrink:0;">
+                <div style="width:130px;height:98px;background:linear-gradient(135deg,#00b894,#55efc4);border-radius:10px;margin-bottom:5px;"></div>
+                <div style="color:#e0e0e0;font-size:11px;font-weight:600;">Free Kicks</div>
+                <div style="color:#6c6880;font-size:10px;">Sports</div>
+              </div>
+              <div style="width:130px;flex-shrink:0;">
+                <div style="width:130px;height:98px;background:linear-gradient(135deg,#a29bfe,#6c5ce7);border-radius:10px;margin-bottom:5px;"></div>
+                <div style="color:#e0e0e0;font-size:11px;font-weight:600;">FrontWars</div>
+                <div style="color:#6c6880;font-size:10px;">Action</div>
+              </div>
+              <div style="width:130px;flex-shrink:0;">
+                <div style="width:130px;height:98px;background:linear-gradient(135deg,#fdcb6e,#e17055);border-radius:10px;margin-bottom:5px;position:relative;">
+                  <div style="position:absolute;top:5px;right:5px;background:#fdcb6e;color:#111;font-size:9px;padding:2px 5px;border-radius:3px;font-weight:700;">TOP</div>
+                </div>
+                <div style="color:#e0e0e0;font-size:11px;font-weight:600;">Mad Pursuit</div>
+                <div style="color:#6c6880;font-size:10px;">Racing</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Games -->
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+              <span style="color:#fff;font-weight:700;font-size:14px;">Action Games</span>
+              <span style="color:#a29bfe;font-size:12px;cursor:pointer;">View more →</span>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <div style="width:130px;flex-shrink:0;">
+                <div style="width:130px;height:98px;background:linear-gradient(135deg,#2d3436,#636e72);border-radius:10px;margin-bottom:5px;"></div>
+                <div style="color:#e0e0e0;font-size:11px;font-weight:600;">War Knights</div>
+                <div style="color:#6c6880;font-size:10px;">Action</div>
+              </div>
+              <div style="width:130px;flex-shrink:0;">
+                <div style="width:130px;height:98px;background:linear-gradient(135deg,#e84393,#d63031);border-radius:10px;margin-bottom:5px;"></div>
+                <div style="color:#e0e0e0;font-size:11px;font-weight:600;">99 Nights</div>
+                <div style="color:#6c6880;font-size:10px;">Action</div>
+              </div>
+              <div style="width:130px;flex-shrink:0;">
+                <div style="width:130px;height:98px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);border-radius:10px;margin-bottom:5px;"></div>
+                <div style="color:#e0e0e0;font-size:11px;font-weight:600;">Stickman Clash</div>
+                <div style="color:#6c6880;font-size:10px;">Action</div>
+              </div>
+              <div style="width:130px;flex-shrink:0;">
+                <div style="width:130px;height:98px;background:linear-gradient(135deg,#0984e3,#74b9ff);border-radius:10px;margin-bottom:5px;position:relative;">
+                  <div style="position:absolute;top:5px;left:5px;background:#e17055;color:#fff;font-size:9px;padding:2px 5px;border-radius:3px;font-weight:700;">HOT</div>
+                </div>
+                <div style="color:#e0e0e0;font-size:11px;font-weight:600;">Iron Legion</div>
+                <div style="color:#6c6880;font-size:10px;">Action</div>
+              </div>
+              <div style="width:130px;flex-shrink:0;">
+                <div style="width:130px;height:98px;background:linear-gradient(135deg,#43e97b,#38f9d7);border-radius:10px;margin-bottom:5px;"></div>
+                <div style="color:#e0e0e0;font-size:11px;font-weight:600;">Sniper Elite</div>
+                <div style="color:#6c6880;font-size:10px;">Action</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GAME DETAIL - just the nav/sidebar correction -->
+<div class="mockup" style="margin-top:20px;border:1px solid #2a2540;">
+  <div class="mockup-header" style="background:linear-gradient(180deg,#1e1a2e 0%,#13101f 100%);color:#fff;border-bottom:1px solid #2a2540;">Layout 2: Game Detail — Corrected Nav</div>
+  <div class="mockup-body" style="background:#0d0b14;padding:0;">
+    <div style="display:flex;min-height:320px;">
+      <!-- Left Sidebar -->
+      <div style="width:60px;background:linear-gradient(180deg,#1e1a2e 0%,#13101f 100%);display:flex;flex-direction:column;align-items:center;padding:14px 0;gap:6px;flex-shrink:0;border-right:1px solid #2a2540;">
+        <div style="width:36px;height:36px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;">🏠</div>
+        <div style="width:36px;height:36px;background:linear-gradient(135deg,#e17055,#d63031);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;">🔥</div>
+        <div style="width:36px;height:36px;background:linear-gradient(135deg,#fdcb6e,#e17055);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;">🏎️</div>
+      </div>
+
+      <!-- Center -->
+      <div style="flex:1;display:flex;flex-direction:column;">
+        <div style="background:linear-gradient(180deg,#1e1a2e 0%,#16132a 100%);padding:10px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #2a2540;">
+          <div style="font-weight:800;color:#fff;font-size:15px;">🎮 Fun88</div>
+          <div style="flex:1;background:#0d0b14;border:1px solid #2a2540;border-radius:20px;padding:7px 16px;max-width:360px;">
+            <span style="color:#555;font-size:12px;">🔍 Search games...</span>
+          </div>
+          <div style="margin-left:auto;background:linear-gradient(135deg,#6c5ce7,#a29bfe);color:#fff;padding:7px 18px;border-radius:20px;font-size:12px;font-weight:700;">Log in</div>
+        </div>
+        <!-- Game Area -->
+        <div style="background:#000;height:180px;display:flex;align-items:center;justify-content:center;">
+          <div style="text-align:center;color:#444;">
+            <div style="font-size:32px;">▶</div>
+            <div style="font-size:11px;margin-top:6px;">Game iframe — 16:9 responsive</div>
+          </div>
+        </div>
+        <div style="padding:14px;background:#0d0b14;">
+          <h3 style="color:#fff;margin:0 0 6px 0;font-size:16px;">Moto X3M</h3>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <div style="background:#1a1729;color:#a29bfe;padding:4px 10px;border-radius:12px;font-size:10px;border:1px solid #2a2540;">Driving</div>
+            <div style="background:#1a1729;color:#a29bfe;padding:4px 10px;border-radius:12px;font-size:10px;border:1px solid #2a2540;">Racing</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Sidebar -->
+      <div style="width:190px;background:linear-gradient(180deg,#1a1729 0%,#13101f 100%);flex-shrink:0;border-left:1px solid #2a2540;padding:12px;display:flex;flex-direction:column;gap:10px;">
+        <div style="background:#0d0b14;border:1px dashed #2a2540;border-radius:8px;padding:10px;text-align:center;">
+          <div style="color:#555;font-size:10px;">AdSense 300×250</div>
+        </div>
+        <div style="color:#e0e0e0;font-size:11px;font-weight:700;">Recommended</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;gap:8px;align-items:center;cursor:pointer;">
+            <div style="width:48px;height:36px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);border-radius:6px;flex-shrink:0;"></div>
+            <div><div style="color:#e0e0e0;font-size:10px;font-weight:600;">Doodle Road</div><div style="color:#6c6880;font-size:9px;">Driving</div></div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;cursor:pointer;">
+            <div style="width:48px;height:36px;background:linear-gradient(135deg,#e17055,#d63031);border-radius:6px;flex-shrink:0;"></div>
+            <div><div style="color:#e0e0e0;font-size:10px;font-weight:600;">Sky Riders</div><div style="color:#6c6880;font-size:9px;">Racing</div></div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;cursor:pointer;">
+            <div style="width:48px;height:36px;background:linear-gradient(135deg,#fdcb6e,#e17055);border-radius:6px;flex-shrink:0;"></div>
+            <div><div style="color:#e0e0e0;font-size:10px;font-weight:600;">Bloxorz</div><div style="color:#6c6880;font-size:9px;">Puzzle</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

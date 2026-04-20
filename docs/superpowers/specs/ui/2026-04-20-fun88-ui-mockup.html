@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fun88 UI v6</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0d0b14; color: #fff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+  svg { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .sidebar svg { stroke-width: 2.5; }
+
+  /* ── FULL-WIDTH TOP NAV ── */
+  .top-nav {
+    position: sticky; top: 0; z-index: 100;
+    width: 100%;
+    background: linear-gradient(180deg, #1e1a2e 0%, #16132a 100%);
+    border-bottom: 1px solid #2a2540;
+    display: flex; align-items: center; gap: 14px;
+    padding: 10px 20px; height: 52px;
+  }
+  .nav-logo { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .nav-logo-icon { width: 30px; height: 30px; background: linear-gradient(135deg,#6c5ce7,#a29bfe); border-radius: 8px; display:flex; align-items:center; justify-content:center; }
+  .nav-logo-text { font-weight: 800; font-size: 16px; color: #fff; }
+  .hamburger { color: #7c7a96; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; }
+  .search-bar {
+    flex: 1; max-width: 500px; margin: 0 auto;
+    background: #0d0b14; border: 1px solid #2a2540; border-radius: 24px;
+    padding: 8px 18px; display: flex; align-items: center; gap: 8px; cursor: text;
+  }
+  .search-bar span { color: #555; font-size: 13px; }
+  .nav-actions { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+  .nav-icon-btn { color: #7c7a96; cursor: pointer; display: flex; }
+  .btn-login {
+    background: linear-gradient(135deg,#6c5ce7,#a29bfe);
+    color: #fff; padding: 7px 20px; border-radius: 20px;
+    font-size: 13px; font-weight: 700; cursor: pointer;
+    box-shadow: 0 2px 12px rgba(108,92,231,0.35); white-space: nowrap;
+  }
+
+  /* ── BODY BELOW NAV ── */
+  .page-body { display: flex; height: calc(100vh - 52px); overflow: hidden; }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 60px;
+    background: linear-gradient(180deg, #1a1729 0%, #13101f 100%);
+    border-right: 1px solid #2a2540;
+    transition: width 0.22s cubic-bezier(.4,0,.2,1);
+    overflow: hidden;
+    flex-shrink: 0;
+    display: flex; flex-direction: column;
+  }
+  .sidebar:hover { width: 230px; }
+
+  .nav-section { padding: 8px 0; }
+  .nav-divider { border: none; border-top: 1px solid #2a2540; margin: 4px 0; }
+  .nav-categories { overflow-y: auto; flex: 1; padding: 4px 0; }
+  .nav-categories::-webkit-scrollbar { width: 2px; }
+  .nav-categories::-webkit-scrollbar-thumb { background: #2a2540; }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    /* icon is 20px; (60px - 20px) / 2 = 20px padding to center it */
+    padding: 10px 0 10px 20px;
+    gap: 14px;
+    cursor: pointer;
+    white-space: nowrap;
+    border-left: 3px solid transparent;
+    transition: background 0.15s;
+    width: 230px; /* fixed width — sidebar clips via overflow:hidden */
+  }
+  .nav-item:hover { background: rgba(108,92,231,0.08); }
+  .nav-item.active {
+    border-left-color: #6c5ce7;
+    background: rgba(108,92,231,0.12);
+  }
+
+  .nav-item .icon {
+    width: 20px; height: 20px;
+    flex-shrink: 0;
+    color: #7c7a96;
+  }
+  .nav-item.active .icon { color: #a29bfe; }
+
+  /* KEY FIX: labels invisible when collapsed, fade in on sidebar hover */
+  .nav-item .label {
+    font-size: 13px;
+    color: #c0bdd8;
+    opacity: 0;
+    transition: opacity 0.18s ease 0.05s;
+    overflow: hidden;
+  }
+  .nav-item.active .label { color: #a29bfe; font-weight: 600; }
+  .nav-item .label-muted { color: #4a4760; }
+  .sidebar:hover .nav-item .label { opacity: 1; }
+
+  /* ── MAIN ── */
+  .main { flex: 1; overflow-y: auto; padding: 20px; background: #0d0b14; }
+  .main::-webkit-scrollbar { width: 6px; }
+  .main::-webkit-scrollbar-thumb { background: #2a2540; border-radius: 3px; }
+
+  .chips { display: flex; gap: 8px; margin-bottom: 24px; overflow-x: auto; }
+  .chips::-webkit-scrollbar { display: none; }
+  .chip {
+    background: #1a1729; border: 1px solid #2a2540; border-radius: 20px;
+    padding: 7px 14px; display: flex; align-items: center; gap: 6px;
+    white-space: nowrap; cursor: pointer; font-size: 12px; color: #c0bdd8;
+  }
+  .chip:hover { border-color: #6c5ce7; }
+
+  .section { margin-bottom: 28px; }
+  .section-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .section-head h3 { font-size: 15px; font-weight: 700; color: #fff; }
+  .section-head a { font-size: 12px; color: #a29bfe; cursor: pointer; }
+
+  .game-row { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 4px; }
+  .game-row::-webkit-scrollbar { display: none; }
+
+  /* ── FEATURED CARDS (large) ── */
+  .card-lg {
+    flex-shrink: 0; border-radius: 14px; position: relative;
+    overflow: hidden; cursor: pointer;
+    transition: transform 0.15s;
+  }
+  .card-lg:hover { transform: scale(1.02); }
+  .card-lg .overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.75)); }
+  .card-lg .meta { position: absolute; bottom: 12px; left: 12px; }
+  .card-lg .meta .name { font-weight: 800; font-size: 16px; color: #fff; }
+
+  /* ── STANDARD CARDS ── */
+  .card {
+    flex-shrink: 0;
+    width: 180px; /* LARGER thumbnails */
+    cursor: pointer;
+  }
+  .card .thumb {
+    width: 180px;
+    height: 135px; /* 4:3 ratio */
+    border-radius: 12px;
+    margin-bottom: 7px;
+    position: relative; overflow: hidden;
+    transition: transform 0.15s;
+  }
+  .card:hover .thumb { transform: scale(1.03); }
+  .card .title { font-size: 12px; font-weight: 600; color: #e0e0e0; margin-bottom: 2px; }
+  .card .cat { font-size: 11px; color: #6c6880; }
+
+  .badge {
+    position: absolute; top: 7px; left: 7px;
+    font-size: 10px; padding: 2px 7px; border-radius: 4px;
+    font-weight: 700; line-height: 1.4;
+  }
+  .badge-new { background: #00b894; color: #fff; }
+  .badge-hot { background: #e17055; color: #fff; left: auto; right: 7px; }
+  .badge-top { background: #fdcb6e; color: #111; left: auto; right: 7px; }
+</style>
+</head>
+<body>
+
+<!-- FULL-WIDTH TOP NAV -->
+<nav class="top-nav">
+  <div class="hamburger">
+    <svg width="20" height="20" viewBox="0 0 24 24"><path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+  </div>
+  <div class="nav-logo">
+    <div class="nav-logo-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" stroke="#fff"><path d="M5.636 5.636l12.728 12.728M18.364 5.636L5.636 18.364"/></svg>
+    </div>
+    <span class="nav-logo-text">Fun88</span>
+  </div>
+  <div class="search-bar">
+    <svg width="15" height="15" viewBox="0 0 24 24" stroke="#555"><path d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+    <span>Search games and categories</span>
+  </div>
+  <div class="nav-actions">
+    <div class="nav-icon-btn"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg></div>
+    <div class="nav-icon-btn"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg></div>
+    <div class="nav-icon-btn"><svg width="20" height="20" viewBox="0 0 24 24"><path d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg></div>
+    <div class="btn-login">Log in</div>
+  </div>
+</nav>
+
+<div class="page-body">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="nav-section">
+      <div class="nav-item active">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>
+        <span class="label">Home</span>
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span class="label label-muted">Recently played</span>
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/></svg>
+        <span class="label">New</span>
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.361-6.867 8.21 8.21 0 003 2.48z"/></svg>
+        <span class="label">Popular Games</span>
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+        <span class="label">Updated</span>
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/></svg>
+        <span class="label">Multiplayer</span>
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 01-.982-3.172M9.497 14.25a7.454 7.454 0 00.981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 007.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M7.73 9.728a6.726 6.726 0 002.748 1.35m8.272-6.842V4.5c0 2.108-.966 3.99-2.48 5.228m2.48-5.492a46.32 46.32 0 012.916.52 6.003 6.003 0 01-5.395 4.972m0 0a6.726 6.726 0 01-2.749 1.35m0 0a6.772 6.772 0 01-3.044 0"/></svg>
+        <span class="label">Leaderboards</span>
+      </div>
+    </div>
+
+    <hr class="nav-divider">
+
+    <div class="nav-categories">
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>
+        <span class="label">.IO</span>
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>
+        <span class="label">Action</span>
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z"/></svg>
+        <span class="label">Adventure</span>
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"/></svg>
+        <span class="label">Card</span>
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z"/></svg>
+        <span class="label">Casual</span>
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M15.042 21.672L13.684 16.6m0 0l-2.51 2.225.569-9.47 5.227 7.917-3.286-.672zm-7.518-.267A8.25 8.25 0 1120.25 10.5M8.288 14.212A5.25 5.25 0 1117.25 10.5"/></svg>
+        <span class="label">Clicker</span>
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 002.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 6.75v10.5a2.25 2.25 0 002.25 2.25zm.75-12h9v9h-9v-9z"/></svg>
+        <span class="label">Controller</span>
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/></svg>
+        <span class="label">Driving</span>
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/></svg>
+        <span class="label">Escape</span>
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M14.25 6.087c0-.355.186-.676.401-.959.221-.29.349-.634.349-1.003 0-1.036-1.007-1.875-2.25-1.875s-2.25.84-2.25 1.875c0 .369.128.713.349 1.003.215.283.401.604.401.959v0a.64.64 0 01-.657.643 48.39 48.39 0 01-4.163-.3c.186 1.613.293 3.25.315 4.907a.656.656 0 01-.658.663v0c-.355 0-.676-.186-.959-.401a1.647 1.647 0 00-1.003-.349c-1.036 0-1.875 1.007-1.875 2.25s.84 2.25 1.875 2.25c.369 0 .713-.128 1.003-.349.283-.215.604-.401.959-.401v0c.31 0 .555.26.532.57a48.039 48.039 0 01-.642 5.056c1.518.19 3.058.309 4.616.354a.64.64 0 00.657-.643v0c0-.355-.186-.676-.401-.959a1.647 1.647 0 01-.349-1.003c0-1.035 1.008-1.875 2.25-1.875 1.243 0 2.25.84 2.25 1.875 0 .369-.128.713-.349 1.003-.215.283-.401.604-.401.959v0c0 .333.277.599.61.58a48.1 48.1 0 005.427-.63 48.05 48.05 0 00.582-4.717.532.532 0 00-.533-.57v0c-.355 0-.676.186-.959.401-.29.221-.634.349-1.003.349-1.035 0-1.875-1.007-1.875-2.25s.84-2.25 1.875-2.25c.37 0 .713.128 1.003.349.283.215.604.401.959.401v0a.656.656 0 00.658-.663 48.422 48.422 0 00-.37-5.36c-1.886.342-3.81.574-5.766.689a.578.578 0 01-.61-.58v0z"/></svg>
+        <span class="label">Puzzle</span>
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M3 3v1.5M3 21v-6m0 0l2.77-.693a9 9 0 016.208.682l.108.054a9 9 0 006.086.71l3.114-.732a48.524 48.524 0 01-.005-10.499l-3.11.732a9 9 0 01-6.085-.711l-.108-.054a9 9 0 00-6.208-.682L3 4.5M3 15V4.5"/></svg>
+        <span class="label">Racing</span>
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M7.5 3.75a1.5 1.5 0 00-1.5 1.5v1.5a1.5 1.5 0 001.5 1.5H9A1.5 1.5 0 0010.5 6V4.5A1.5 1.5 0 009 3H7.5zM15 3.75a1.5 1.5 0 00-1.5 1.5v1.5a1.5 1.5 0 001.5 1.5h1.5A1.5 1.5 0 0018 6V4.5A1.5 1.5 0 0016.5 3H15zM7.5 13.5a1.5 1.5 0 00-1.5 1.5V16.5a1.5 1.5 0 001.5 1.5H9A1.5 1.5 0 0010.5 16.5V15a1.5 1.5 0 00-1.5-1.5H7.5zM15 13.5a1.5 1.5 0 00-1.5 1.5V16.5a1.5 1.5 0 001.5 1.5h1.5a1.5 1.5 0 001.5-1.5V15a1.5 1.5 0 00-1.5-1.5H15zM12 9a3 3 0 100 6 3 3 0 000-6z"/></svg>
+        <span class="label">Shooting</span>
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418"/></svg>
+        <span class="label">Soccer</span>
+      </div>
+      <div class="nav-item">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/></svg>
+        <span class="label">Sports</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+    <div class="chips">
+      <div class="chip">🏆 Be the best</div>
+      <div class="chip">🤝 Multiplayer</div>
+      <div class="chip">🧩 Puzzle</div>
+      <div class="chip">⚡ 5-min fun</div>
+      <div class="chip">🧠 Train your brain</div>
+      <div class="chip">⏰ Timeless classics</div>
+    </div>
+
+    <!-- Top picks — large featured cards -->
+    <div class="section">
+      <div class="section-head"><h3>Top picks for you</h3><a>View more →</a></div>
+      <div class="game-row">
+        <div class="card-lg" style="width:280px;height:180px;background:linear-gradient(135deg,#2d1b69,#11998e);flex-shrink:0;">
+          <div class="overlay"></div>
+          <div class="meta">
+            <div style="background:#e17055;color:#fff;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:700;display:inline-block;margin-bottom:5px;">HOT</div>
+            <div class="name">bloxd.io</div>
+          </div>
+        </div>
+        <div class="card-lg" style="width:180px;height:180px;background:linear-gradient(135deg,#667eea,#764ba2);flex-shrink:0;">
+          <div class="overlay"></div>
+          <div class="meta"><div class="name" style="font-size:13px;">Poly Track</div></div>
+        </div>
+        <div class="card-lg" style="width:180px;height:180px;background:linear-gradient(135deg,#f093fb,#f5576c);flex-shrink:0;">
+          <div class="overlay"></div>
+          <div class="meta"><div class="name" style="font-size:13px;">Smash Karts</div></div>
+        </div>
+        <div class="card-lg" style="width:180px;height:180px;background:linear-gradient(135deg,#4facfe,#00f2fe);flex-shrink:0;">
+          <div class="overlay"></div>
+          <div class="meta"><div class="name" style="font-size:13px;">Free Kicks</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- New Games -->
+    <div class="section">
+      <div class="section-head"><h3>New games</h3><a>View more →</a></div>
+      <div class="game-row">
+        <div class="card">
+          <div class="thumb" style="background:linear-gradient(135deg,#e17055,#d63031);">
+            <div class="badge badge-new">NEW</div>
+          </div>
+          <div class="title">Stupidity Test</div><div class="cat">Casual</div>
+        </div>
+        <div class="card">
+          <div class="thumb" style="background:linear-gradient(135deg,#0984e3,#74b9ff);">
+            <div class="badge badge-top">TOP</div>
+          </div>
+          <div class="title">Train Racer</div><div class="cat">Racing</div>
+        </div>
+        <div class="card">
+          <div class="thumb" style="background:linear-gradient(135deg,#00b894,#55efc4);"></div>
+          <div class="title">Free Kicks 2025</div><div class="cat">Sports</div>
+        </div>
+        <div class="card">
+          <div class="thumb" style="background:linear-gradient(135deg,#a29bfe,#6c5ce7);">
+            <div class="badge badge-new">NEW</div>
+          </div>
+          <div class="title">FrontWars</div><div class="cat">Action</div>
+        </div>
+        <div class="card">
+          <div class="thumb" style="background:linear-gradient(135deg,#fdcb6e,#e17055);">
+            <div class="badge badge-hot">HOT</div>
+          </div>
+          <div class="title">Mad Pursuit</div><div class="cat">Racing</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Games -->
+    <div class="section">
+      <div class="section-head"><h3>Action Games</h3><a>View more →</a></div>
+      <div class="game-row">
+        <div class="card">
+          <div class="thumb" style="background:linear-gradient(135deg,#2d3436,#636e72);">
+            <div class="badge badge-top">TOP</div>
+          </div>
+          <div class="title">War Knights</div><div class="cat">Action</div>
+        </div>
+        <div class="card">
+          <div class="thumb" style="background:linear-gradient(135deg,#e84393,#d63031);">
+            <div class="badge badge-hot">HOT</div>
+          </div>
+          <div class="title">99 Nights</div><div class="cat">Action</div>
+        </div>
+        <div class="card">
+          <div class="thumb" style="background:linear-gradient(135deg,#6c5ce7,#a29bfe);"></div>
+          <div class="title">Stickman Clash</div><div class="cat">Action</div>
+        </div>
+        <div class="card">
+          <div class="thumb" style="background:linear-gradient(135deg,#fa709a,#fee140);"></div>
+          <div class="title">Cyber Strike</div><div class="cat">Action</div>
+        </div>
+        <div class="card">
+          <div class="thumb" style="background:linear-gradient(135deg,#43e97b,#38f9d7);">
+            <div class="badge badge-new">NEW</div>
+          </div>
+          <div class="title">Jungle Fury</div><div class="cat">Action</div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+</body>
+</html>
