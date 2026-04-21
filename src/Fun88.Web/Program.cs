@@ -10,6 +10,7 @@ using Fun88.Web.Modules.Scraper.Providers;
 using Fun88.Web.Modules.Scraper.Services;
 using Fun88.Web.Modules.Translation.Services;
 using Fun88.Web.Shared.Constants;
+using Quartz;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -56,6 +57,13 @@ builder.Services.AddHttpClient<OpenAiHttpClient>(client =>
     client.Timeout = TimeSpan.FromSeconds(builder.Configuration.GetValue<int>("OpenAi:TranslationTimeoutSeconds"));
 });
 builder.Services.AddScoped<ITranslationService, OpenAiTranslationService>();
+
+builder.Services.AddQuartz();
+builder.Services.AddQuartzHostedService(options =>
+    options.WaitForJobsToComplete = true);
+
+builder.Services.AddScoped<IScheduler>(sp =>
+    sp.GetRequiredService<ISchedulerFactory>().GetScheduler().GetAwaiter().GetResult());
 
 // Cookie authentication + AdminOnly policy
 var authSection = builder.Configuration.GetSection(AuthCookieOptions.Section);

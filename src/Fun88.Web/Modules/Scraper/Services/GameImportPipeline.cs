@@ -1,18 +1,26 @@
 namespace Fun88.Web.Modules.Scraper.Services;
 
+using Fun88.Web.Infrastructure.Configuration;
 using Fun88.Web.Infrastructure.Data.Entities;
 using Fun88.Web.Modules.Categories.Repositories;
 using Fun88.Web.Modules.Games.Repositories;
 using Fun88.Web.Modules.Scraper.Providers;
 using Fun88.Web.Shared.Constants;
+using Microsoft.Extensions.Options;
+using Quartz;
+using Supabase;
 using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using TranslationJobEntity = Fun88.Web.Infrastructure.Data.Entities.TranslationJob;
 
 public class GameImportPipeline(
     IGameRepository gameRepo,
-    ICategoryRepository categoryRepo
+    ICategoryRepository categoryRepo,
+    Client supabaseClient,
+    IScheduler scheduler,
+    IOptions<OpenAiOptions> openAiOpts
 ) : IGameImportPipeline
 {
     public async Task<ImportGameResult> ImportAsync(RawGameData raw, int providerId, CancellationToken ct = default)
@@ -22,13 +30,13 @@ public class GameImportPipeline(
             // Skip if already imported
             var existing = await gameRepo.GetByProviderGameIdAsync(providerId, raw.ProviderGameId, ct);
             if (existing is not null)
-                return new ImportGameResult(Imported: false, Skipped: true, Error: null);
+                return new ImportGameResult(Imported: false, Skipped: true, Error: null, GameId: existing.Id);
 
-            var slug = Slugify(raw.Title);
+            var gameId = Guid.NewGuid();
             var game = new Game
             {
-                Id = Guid.NewGuid(),
-                Slug = slug,
+                Id = gameId,
+                Slug = Slugify(raw.Title),
                 ProviderId = providerId,
                 ProviderGameId = raw.ProviderGameId,
                 GameUrl = raw.GameUrl,
@@ -51,11 +59,22 @@ public class GameImportPipeline(
             };
 
             await gameRepo.AddAsync(game, ct);
-            return new ImportGameResult(Imported: true, Skipped: false, Error: null);
+
+            var job = new TranslationJobEntity
+            {
+                GameId = gameId,
+                LanguageCode = LanguageCode.Thai,
+                Status = "pending",
+                AttemptCount = 0,
+                CreatedAt = DateTime.UtcNow
+            };
+            await supabaseClient.From<TranslationJobEntity>().Insert(job, cancellationToken: ct);
+
+            return new ImportGameResult(Imported: true, Skipped: false, Error: null, GameId: gameId);
         }
         catch (Exception ex)
         {
-            return new ImportGameResult(Imported: false, Skipped: false, Error: ex.Message);
+            return new ImportGameResult(Imported: false, Skipped: false, Error: ex.Message, GameId: null);
         }
     }
 
@@ -66,11 +85,12 @@ public class GameImportPipeline(
             // Custom games may not collide on slug
             var existing = await gameRepo.GetBySlugAsync(custom.Slug, ct);
             if (existing is not null)
-                return new ImportGameResult(Imported: false, Skipped: false, Error: $"Slug '{custom.Slug}' already exists.");
+                return new ImportGameResult(Imported: false, Skipped: false, Error: $"Slug '{custom.Slug}' already exists.", GameId: null);
 
+            var gameId = Guid.NewGuid();
             var game = new Game
             {
-                Id = Guid.NewGuid(),
+                Id = gameId,
                 Slug = custom.Slug,
                 ProviderId = null,
                 ProviderGameId = null,
@@ -94,11 +114,32 @@ public class GameImportPipeline(
             };
 
             await gameRepo.AddAsync(game, ct);
-            return new ImportGameResult(Imported: true, Skipped: false, Error: null);
+
+            var job = new TranslationJobEntity
+            {
+                GameId = gameId,
+                LanguageCode = LanguageCode.Thai,
+                Status = "pending",
+                AttemptCount = 0,
+                CreatedAt = DateTime.UtcNow
+            };
+            await supabaseClient.From<TranslationJobEntity>().Insert(job, cancellationToken: ct);
+
+            if (openAiOpts.Value.TranslationEnabled)
+            {
+                var detail = JobBuilder.Create<Fun88.Web.Modules.Translation.Jobs.TranslationJob>()
+                    .WithIdentity($"translation-{gameId}")
+                    .UsingJobData("game_id", gameId.ToString())
+                    .Build();
+                var trigger = TriggerBuilder.Create().StartNow().Build();
+                await scheduler.ScheduleJob(detail, trigger, ct);
+            }
+
+            return new ImportGameResult(Imported: true, Skipped: false, Error: null, GameId: gameId);
         }
         catch (Exception ex)
         {
-            return new ImportGameResult(Imported: false, Skipped: false, Error: ex.Message);
+            return new ImportGameResult(Imported: false, Skipped: false, Error: ex.Message, GameId: null);
         }
     }
 
