@@ -8,6 +8,7 @@ using Fun88.Web.Modules.Games.Repositories;
 using Fun88.Web.Modules.Games.Services;
 using Fun88.Web.Modules.Scraper.Providers;
 using Fun88.Web.Modules.Scraper.Services;
+using Fun88.Web.Modules.Translation.Services;
 using Fun88.Web.Shared.Constants;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -47,6 +48,14 @@ builder.Services.AddHttpClient<GameDistributionHttpClient>(client =>
     client.DefaultRequestHeaders.Add("Authorization", $"Bearer {builder.Configuration["GameDistribution:ApiKey"]}");
 });
 builder.Services.AddScoped<IGameProvider, GameDistributionProvider>();
+
+builder.Services.AddHttpClient<OpenAiHttpClient>(client =>
+{
+    client.BaseAddress = new Uri("https://api.openai.com/v1/");
+    client.DefaultRequestHeaders.Add("Authorization", $"Bearer {builder.Configuration["OpenAi:ApiKey"]}");
+    client.Timeout = TimeSpan.FromSeconds(builder.Configuration.GetValue<int>("OpenAi:TranslationTimeoutSeconds"));
+});
+builder.Services.AddScoped<ITranslationService, OpenAiTranslationService>();
 
 // Cookie authentication + AdminOnly policy
 var authSection = builder.Configuration.GetSection(AuthCookieOptions.Section);
