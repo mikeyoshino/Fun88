@@ -1,0 +1,33 @@
+@model IReadOnlyList<Fun88.Web.Modules.Admin.ViewModels.AdminTranslationJobViewModel>
+@{
+    ViewData["Title"] = "Translations";
+    Layout = "_AdminLayout";
+}
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
+    <h2 style="margin:0;font-size:1.1rem">Translation Jobs</h2>
+    <form method="post" action="/admin/translations/retry-failed">
+        @Html.AntiForgeryToken()
+        <button type="submit" class="btn btn-primary">Retry All Failed</button>
+    </form>
+</div>
+<table>
+    <thead><tr><th>Game</th><th>Status</th><th>Created</th><th>Completed</th><th>Error</th><th>Action</th></tr></thead>
+    <tbody>
+        @foreach (var j in Model)
+        {
+            <tr>
+                <td>@j.GameTitle</td>
+                <td>@j.Status</td>
+                <td>@j.CreatedAt?.ToString("u")</td>
+                <td>@j.CompletedAt?.ToString("u")</td>
+                <td style="color:#f87171">@j.LastError</td>
+                <td>
+                    <form method="post" action="/admin/translations/retry/@j.GameId" style="display:inline">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-sm">Retry</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
