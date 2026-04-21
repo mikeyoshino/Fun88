@@ -15,4 +15,10 @@ public class ScraperSchedule : BaseModel
 
     [Column("is_enabled")]
     public bool IsEnabled { get; set; }
+
+    [Column("last_run_at")]
+    public DateTime? LastRunAt { get; set; }
+
+    [Column("next_run_at")]
+    public DateTime? NextRunAt { get; set; }
 }
