@@ -1,5 +1,7 @@
+using Fun88.Web.Infrastructure.Constants;
 using Quartz;
 using Supabase;
+using Fun88.Web.Infrastructure.BackgroundServices;
 using Fun88.Web.Infrastructure.Clients;
 using Fun88.Web.Infrastructure.Configuration;
 using Fun88.Web.Middleware;
@@ -7,8 +9,10 @@ using Fun88.Web.Modules.Admin.Services;
 using Fun88.Web.Modules.Categories.Repositories;
 using Fun88.Web.Modules.Games.Repositories;
 using Fun88.Web.Modules.Games.Services;
+using Fun88.Web.Modules.Scraper.Jobs;
 using Fun88.Web.Modules.Scraper.Providers;
 using Fun88.Web.Modules.Scraper.Services;
+using Fun88.Web.Modules.Translation.Jobs;
 using Fun88.Web.Modules.Translation.Services;
 using Fun88.Web.Shared.Constants;
 
@@ -35,7 +39,12 @@ builder.Services.AddScoped<Supabase.Client>(_ =>
     }));
 
 // Quartz scheduler
-builder.Services.AddQuartz();
+builder.Services.AddQuartz(q =>
+{
+    q.AddJob<ScraperJob>(opts => opts.WithIdentity(JobKeys.Scraper).StoreDurably());
+    q.AddJob<BulkTranslationJob>(opts => opts.WithIdentity("bulk-translation", "translation").StoreDurably());
+    q.AddJob<TranslationJobWorker>(opts => opts.WithIdentity("translation-worker", "translation").StoreDurably());
+});
 builder.Services.AddQuartzHostedService(options =>
     options.WaitForJobsToComplete = true);
 
@@ -63,10 +72,9 @@ builder.Services.AddHttpClient<OpenAiHttpClient>(client =>
 });
 builder.Services.AddScoped<ITranslationService, OpenAiTranslationService>();
 
-builder.Services.AddScoped<IScheduler>(sp =>
-    sp.GetRequiredService<ISchedulerFactory>().GetScheduler().GetAwaiter().GetResult());
+builder.Services.AddHostedService<QuartzStartupService>();
 
-// Cookie authentication + AdminOnly policy
+// Cookie authentication+ AdminOnly policy
 var authSection = builder.Configuration.GetSection(AuthCookieOptions.Section);
 var schemeName = authSection["AdminSchemeName"] ?? "AdminCookie";
 var expiryHours = int.TryParse(authSection["AdminExpiryHours"], out var h) ? h : 8;

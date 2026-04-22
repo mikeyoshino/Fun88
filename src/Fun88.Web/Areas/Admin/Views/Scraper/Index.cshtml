@@ -1,0 +1,93 @@
+@model IReadOnlyList<Fun88.Web.Modules.Admin.ViewModels.AdminScraperJobViewModel>
+@{
+    ViewData["Title"] = "Scraper";
+    Layout = "_AdminLayout";
+}
+
+@if (TempData["Success"] != null)
+{
+    <div style="background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.25);border-radius:7px;padding:0.6rem 1rem;margin-bottom:1rem;color:#34d399;font-size:0.9rem">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25);border-radius:7px;padding:0.6rem 1rem;margin-bottom:1rem;color:#f87171;font-size:0.9rem">@TempData["Error"]</div>
+}
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin-bottom:1.5rem">
+    <div class="stat-card">
+        <div class="stat-label">Schedule</div>
+        <div style="font-size:1rem;font-weight:600;color:#fff;word-break:break-all">@(ViewBag.Schedule?.CronExpression ?? "Not configured")</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Next Run</div>
+        <div style="font-size:1rem;font-weight:600;color:#fff">@ViewBag.NextFireTime</div>
+    </div>
+</div>
+
+<div style="display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap;align-items:flex-start">
+    <form method="post" action="/admin/scraper/run-now">
+        @Html.AntiForgeryToken()
+        <button type="submit" class="btn btn-primary">▶ Run Now</button>
+    </form>
+
+    <form method="post" action="/admin/scraper/update-schedule" style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap">
+        @Html.AntiForgeryToken()
+        <input name="cronExpression" value="@ViewBag.Schedule?.CronExpression"
+               style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:0.4rem 0.75rem;color:#e2e8f0;font-size:0.85rem;width:240px" 
+               placeholder="0 0 * * * ?" />
+        <button type="submit" class="btn btn-primary">Update Schedule</button>
+    </form>
+</div>
+
+<h3 style="font-size:1rem;font-weight:600;margin-bottom:0.75rem">Last 20 Runs</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Started At</th>
+            <th>Triggered By</th>
+            <th>Status</th>
+            <th>Found</th>
+            <th>Imported</th>
+            <th>Skipped</th>
+            <th>Completed At</th>
+            <th>Error</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (!Model.Any())
+        {
+            <tr><td colspan="8" style="text-align:center;padding:2rem;color:#9ca3af">No scraper runs yet</td></tr>
+        }
+        @foreach (var j in Model)
+        {
+            <tr>
+                <td>@j.StartedAt?.ToString("u")</td>
+                <td>@j.TriggeredBy</td>
+                <td>
+                    @{
+                        var badgeColor = j.Status switch
+                        {
+                            "completed" => "rgba(52,211,153,0.15)",
+                            "failed" => "rgba(239,68,68,0.15)",
+                            "running" => "rgba(251,191,36,0.15)",
+                            _ => "rgba(255,255,255,0.08)"
+                        };
+                        var badgeText = j.Status switch
+                        {
+                            "completed" => "#34d399",
+                            "failed" => "#f87171",
+                            "running" => "#fbbf24",
+                            _ => "#9ca3af"
+                        };
+                    }
+                    <span style="background:@badgeColor;color:@badgeText;border-radius:5px;padding:0.2rem 0.55rem;font-size:0.78rem;font-weight:500">@j.Status</span>
+                </td>
+                <td>@j.GamesFound</td>
+                <td>@j.GamesImported</td>
+                <td>@j.GamesSkipped</td>
+                <td>@j.CompletedAt?.ToString("u")</td>
+                <td style="color:#f87171;font-size:0.82rem">@j.ErrorMessage</td>
+            </tr>
+        }
+    </tbody>
+</table>
