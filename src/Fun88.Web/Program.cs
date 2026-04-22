@@ -1,3 +1,4 @@
+using Quartz;
 using Supabase;
 using Fun88.Web.Infrastructure.Clients;
 using Fun88.Web.Infrastructure.Configuration;
@@ -31,6 +32,11 @@ builder.Services.AddScoped<Supabase.Client>(_ =>
         AutoRefreshToken = true,
         AutoConnectRealtime = false
     }));
+
+// Quartz scheduler
+builder.Services.AddQuartz();
+builder.Services.AddQuartzHostedService(options =>
+    options.WaitForJobsToComplete = true);
 
 // Repositories & services
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
