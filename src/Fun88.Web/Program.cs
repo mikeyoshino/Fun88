@@ -1,4 +1,7 @@
+using Fun88.Web.Infrastructure.Constants;
+using Quartz;
 using Supabase;
+using Fun88.Web.Infrastructure.BackgroundServices;
 using Fun88.Web.Infrastructure.Clients;
 using Fun88.Web.Infrastructure.Configuration;
 using Fun88.Web.Middleware;
@@ -6,8 +9,12 @@ using Fun88.Web.Modules.Admin.Services;
 using Fun88.Web.Modules.Categories.Repositories;
 using Fun88.Web.Modules.Games.Repositories;
 using Fun88.Web.Modules.Games.Services;
+using Fun88.Web.Modules.Scraper.Jobs;
 using Fun88.Web.Modules.Scraper.Providers;
 using Fun88.Web.Modules.Scraper.Services;
+using Fun88.Web.Modules.Translation.Jobs;
+using Fun88.Web.Modules.Translation.Services;
+using Fun88.Web.Modules.Users.Services;
 using Fun88.Web.Shared.Constants;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -32,13 +39,28 @@ builder.Services.AddScoped<Supabase.Client>(_ =>
         AutoConnectRealtime = false
     }));
 
+// Quartz scheduler
+builder.Services.AddQuartz(q =>
+{
+    q.AddJob<ScraperJob>(opts => opts.WithIdentity(JobKeys.Scraper).StoreDurably());
+    q.AddJob<BulkTranslationJob>(opts => opts.WithIdentity("bulk-translation", "translation").StoreDurably());
+    q.AddJob<TranslationJobWorker>(opts => opts.WithIdentity("translation-worker", "translation").StoreDurably());
+});
+builder.Services.AddQuartzHostedService(options =>
+    options.WaitForJobsToComplete = true);
+
 // Repositories & services
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IGameRepository, GameRepository>();
 builder.Services.AddScoped<IGameQueryService, GameQueryService>();
 builder.Services.AddScoped<IGameImportPipeline, GameImportPipeline>();
 builder.Services.AddScoped<IAdminAuthService, AdminAuthService>();
+builder.Services.AddScoped<IUserSyncService, UserSyncService>();
 builder.Services.AddScoped<GdEmbedUrlBuilder>();
+builder.Services.AddScoped<IFavoriteService, FavoriteService>();
+builder.Services.AddScoped<IGameRatingService, GameRatingService>();
+builder.Services.AddScoped<ILikeService, LikeService>();
+builder.Services.AddScoped<IPlayHistoryService, PlayHistoryService>();
 
 // HttpClient for GameDistribution
 builder.Services.AddHttpClient<GameDistributionHttpClient>(client =>
@@ -48,9 +70,20 @@ builder.Services.AddHttpClient<GameDistributionHttpClient>(client =>
 });
 builder.Services.AddScoped<IGameProvider, GameDistributionProvider>();
 
-// Cookie authentication + AdminOnly policy
+builder.Services.AddHttpClient<OpenAiHttpClient>(client =>
+{
+    client.BaseAddress = new Uri("https://api.openai.com/v1/");
+    client.DefaultRequestHeaders.Add("Authorization", $"Bearer {builder.Configuration["OpenAi:ApiKey"]}");
+    client.Timeout = TimeSpan.FromSeconds(builder.Configuration.GetValue<int>("OpenAi:TranslationTimeoutSeconds"));
+});
+builder.Services.AddScoped<ITranslationService, OpenAiTranslationService>();
+
+builder.Services.AddHostedService<QuartzStartupService>();
+
+// Cookie authentication + AdminOnly / UserOnly policies
 var authSection = builder.Configuration.GetSection(AuthCookieOptions.Section);
 var schemeName = authSection["AdminSchemeName"] ?? "AdminCookie";
+var userSchemeName = authSection["UserSchemeName"] ?? "UserAuth";
 var expiryHours = int.TryParse(authSection["AdminExpiryHours"], out var h) ? h : 8;
 
 builder.Services.AddAuthentication(schemeName)
@@ -59,11 +92,21 @@ builder.Services.AddAuthentication(schemeName)
         o.LoginPath = "/admin/auth/login";
         o.ExpireTimeSpan = TimeSpan.FromHours(expiryHours);
         o.SlidingExpiration = true;
+    })
+    .AddCookie(userSchemeName, o =>
+    {
+        o.LoginPath = "/account/login";
+        o.ExpireTimeSpan = TimeSpan.FromDays(30);
+        o.SlidingExpiration = true;
     });
 
 builder.Services.AddAuthorization(o =>
+{
     o.AddPolicy(PolicyNames.AdminOnly, p =>
-        p.RequireAuthenticatedUser().RequireRole("Admin")));
+        p.RequireAuthenticatedUser().RequireRole("Admin"));
+    o.AddPolicy(PolicyNames.UserOnly, p =>
+        p.AddAuthenticationSchemes(userSchemeName).RequireAuthenticatedUser());
+});
 
 builder.Services.AddControllersWithViews();
 
@@ -79,8 +122,8 @@ if (!app.Environment.IsDevelopment())
 app.UseMiddleware<SecurityHeadersMiddleware>();
 app.UseHttpsRedirection();
 app.UseRouting();
-app.UseMiddleware<LanguageResolutionMiddleware>();
 app.UseAuthentication();
+app.UseMiddleware<LanguageResolutionMiddleware>();
 app.UseAuthorization();
 
 app.MapStaticAssets();

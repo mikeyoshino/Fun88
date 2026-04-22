@@ -1,0 +1,16 @@
+@using System.Security.Claims
+
+@if (User.Identity?.IsAuthenticated == true && User.Identity.AuthenticationType == "UserAuth")
+{
+    var email = User.FindFirst(ClaimTypes.Email)?.Value;
+    <a asp-controller="Account" asp-action="Profile" class="btn-login" style="font-size:12px;padding:6px 16px;">@email</a>
+    <form asp-controller="Account" asp-action="Logout" method="post" style="display:inline;">
+        @Html.AntiForgeryToken()
+        <button type="submit" class="btn-login" style="background:#2a2540;box-shadow:none;font-size:12px;padding:6px 16px;border:none;cursor:pointer;">Logout</button>
+    </form>
+}
+else
+{
+    <a asp-controller="Account" asp-action="Login" class="btn-login" style="background:#2a2540;box-shadow:none;font-size:12px;padding:6px 16px;">Login</a>
+    <a asp-controller="Account" asp-action="Register" class="btn-login" style="font-size:12px;padding:6px 16px;">Register</a>
+}

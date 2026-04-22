@@ -1,0 +1,32 @@
+@model Fun88.Web.Modules.Users.ViewModels.ProfileViewModel
+@{
+    ViewData["Title"] = "Profile";
+}
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+        <h2 class="mb-4">My Profile</h2>
+
+        <form asp-action="Profile" method="post">
+            @Html.AntiForgeryToken()
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-control" value="@Model.Email" readonly disabled />
+            </div>
+            <div class="mb-3">
+                <label asp-for="DisplayName" class="form-label">Display Name</label>
+                <input asp-for="DisplayName" class="form-control" />
+                <span asp-validation-for="DisplayName" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="PreferredLanguage" class="form-label">Preferred Language</label>
+                <select asp-for="PreferredLanguage" class="form-select">
+                    <option value="en">English</option>
+                    <option value="th">Thai</option>
+                </select>
+                <span asp-validation-for="PreferredLanguage" class="text-danger"></span>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+        </form>
+    </div>
+</div>

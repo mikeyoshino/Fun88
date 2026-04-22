@@ -1,0 +1,54 @@
+@model IReadOnlyList<Fun88.Web.Modules.Admin.ViewModels.AdminTranslationJobViewModel>
+@{
+    ViewData["Title"] = "Translations";
+    Layout = "_AdminLayout";
+}
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
+    <h2 style="margin:0;font-size:1.1rem">Translation Jobs</h2>
+    <form method="post" action="/admin/translations/retry-failed">
+        @Html.AntiForgeryToken()
+        <button type="submit" class="btn btn-primary">Retry All Failed</button>
+    </form>
+</div>
+@if (TempData["Success"] != null)
+{
+    <div style="background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.25);border-radius:7px;padding:0.6rem 1rem;margin-bottom:1rem;color:#34d399;font-size:0.9rem">@TempData["Success"]</div>
+}
+<table>
+    <thead>
+        <tr>
+            <th>Game</th>
+            <th>Language</th>
+            <th>Status</th>
+            <th>Attempts</th>
+            <th>Created</th>
+            <th>Completed</th>
+            <th>Error</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (!Model.Any())
+        {
+            <tr><td colspan="8" style="text-align:center;padding:2rem;color:#9ca3af">No pending or failed translation jobs</td></tr>
+        }
+        @foreach (var j in Model)
+        {
+            <tr>
+                <td>@j.GameTitle</td>
+                <td>@j.LanguageCode</td>
+                <td>@j.Status</td>
+                <td>@j.AttemptCount</td>
+                <td>@j.CreatedAt.ToString("u")</td>
+                <td>@j.CompletedAt?.ToString("u")</td>
+                <td style="color:#f87171">@j.LastError</td>
+                <td>
+                    <form method="post" asp-action="Retry" asp-route-gameId="@j.GameId" asp-route-languageCode="@j.LanguageCode" style="display:inline">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-sm">Retry</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
