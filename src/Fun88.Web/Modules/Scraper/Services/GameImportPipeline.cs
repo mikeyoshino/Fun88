@@ -2,19 +2,23 @@ namespace Fun88.Web.Modules.Scraper.Services;
 
 using Fun88.Web.Infrastructure.Configuration;
 using Fun88.Web.Infrastructure.Data.Entities;
+using Fun88.Web.Modules.Categories.Repositories;
 using Fun88.Web.Modules.Games.Repositories;
 using Fun88.Web.Modules.Scraper.Providers;
 using Fun88.Web.Shared.Constants;
 using Microsoft.Extensions.Options;
 using Quartz;
+using Supabase;
 using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TranslationJobEntity = Fun88.Web.Infrastructure.Data.Entities.TranslationJob;
+
 public class GameImportPipeline(
     IGameRepository gameRepo,
-    Supabase.Client supabaseClient,
+    ICategoryRepository categoryRepo,
+    Client supabaseClient,
     ISchedulerFactory schedulerFactory,
     IOptions<OpenAiOptions> openAiOpts
 ) : IGameImportPipeline
@@ -26,14 +30,13 @@ public class GameImportPipeline(
             // Skip if already imported
             var existing = await gameRepo.GetByProviderGameIdAsync(providerId, raw.ProviderGameId, ct);
             if (existing is not null)
-                return new ImportGameResult(Imported: false, Skipped: true, Error: null, GameId: null);
+                return new ImportGameResult(Imported: false, Skipped: true, Error: null, GameId: existing.Id);
 
             var gameId = Guid.NewGuid();
-            var slug = Slugify(raw.Title);
             var game = new Game
             {
                 Id = gameId,
-                Slug = slug,
+                Slug = Slugify(raw.Title),
                 ProviderId = providerId,
                 ProviderGameId = raw.ProviderGameId,
                 GameUrl = raw.GameUrl,

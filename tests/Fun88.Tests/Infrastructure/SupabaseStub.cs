@@ -2,10 +2,7 @@ namespace Fun88.Tests.Infrastructure;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.Server;
-using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Supabase;
 
 public sealed class SupabaseStub : IAsyncDisposable
@@ -37,13 +34,7 @@ public sealed class SupabaseStub : IAsyncDisposable
         });
         await app.StartAsync();
 
-        // Get the actual bound port (port 0 means OS-assigned)
-        var addresses = app.Services
-            .GetRequiredService<IServer>()
-            .Features.Get<IServerAddressesFeature>()!
-            .Addresses;
-        var url = addresses.First();
-
+        var url = app.Urls.First();
         var client = new Client(url, "key", new SupabaseOptions
         {
             AutoRefreshToken = false,

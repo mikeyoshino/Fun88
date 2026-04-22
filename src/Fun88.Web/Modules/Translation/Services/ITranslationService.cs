@@ -1,4 +1,5 @@
 namespace Fun88.Web.Modules.Translation.Services;
+
 using Fun88.Web.Modules.Translation.Models;
 
 public interface ITranslationService
@@ -9,8 +10,8 @@ public interface ITranslationService
         string targetLanguage,
         CancellationToken ct = default);
 
-    Task<List<TranslationResult>> TranslateBatchAsync(
-        List<TranslationRequest> requests,
+    Task<IReadOnlyList<TranslationResult>> TranslateBatchAsync(
+        IReadOnlyList<TranslationRequest> requests,
         TranslationContext context,
         string targetLanguage,
         CancellationToken ct = default);

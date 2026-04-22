@@ -9,6 +9,7 @@ using Fun88.Web.Modules.Games.Repositories;
 using Fun88.Web.Modules.Games.Services;
 using Fun88.Web.Modules.Scraper.Providers;
 using Fun88.Web.Modules.Scraper.Services;
+using Fun88.Web.Modules.Translation.Services;
 using Fun88.Web.Shared.Constants;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -44,8 +45,6 @@ builder.Services.AddScoped<IGameRepository, GameRepository>();
 builder.Services.AddScoped<IGameQueryService, GameQueryService>();
 builder.Services.AddScoped<IGameImportPipeline, GameImportPipeline>();
 builder.Services.AddScoped<IAdminAuthService, AdminAuthService>();
-builder.Services.AddScoped<Fun88.Web.Modules.Translation.Services.ITranslationService,
-    Fun88.Web.Modules.Translation.Services.OpenAiTranslationService>();
 builder.Services.AddScoped<GdEmbedUrlBuilder>();
 
 // HttpClient for GameDistribution
@@ -55,6 +54,17 @@ builder.Services.AddHttpClient<GameDistributionHttpClient>(client =>
     client.DefaultRequestHeaders.Add("Authorization", $"Bearer {builder.Configuration["GameDistribution:ApiKey"]}");
 });
 builder.Services.AddScoped<IGameProvider, GameDistributionProvider>();
+
+builder.Services.AddHttpClient<OpenAiHttpClient>(client =>
+{
+    client.BaseAddress = new Uri("https://api.openai.com/v1/");
+    client.DefaultRequestHeaders.Add("Authorization", $"Bearer {builder.Configuration["OpenAi:ApiKey"]}");
+    client.Timeout = TimeSpan.FromSeconds(builder.Configuration.GetValue<int>("OpenAi:TranslationTimeoutSeconds"));
+});
+builder.Services.AddScoped<ITranslationService, OpenAiTranslationService>();
+
+builder.Services.AddScoped<IScheduler>(sp =>
+    sp.GetRequiredService<ISchedulerFactory>().GetScheduler().GetAwaiter().GetResult());
 
 // Cookie authentication + AdminOnly policy
 var authSection = builder.Configuration.GetSection(AuthCookieOptions.Section);

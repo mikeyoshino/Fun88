@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Quartz;
 using Supabase;
+using TranslationJobEntity = Fun88.Web.Infrastructure.Data.Entities.TranslationJob;
 
 [Area("Admin")]
 [Route("admin/translations")]
@@ -17,7 +18,7 @@ public class AdminTranslationsController(Client supabaseClient, ISchedulerFactor
     [HttpGet("")]
     public async Task<IActionResult> Index(CancellationToken ct = default)
     {
-        var jobs = await supabaseClient.From<TranslationJob>()
+        var jobs = await supabaseClient.From<TranslationJobEntity>()
             .Filter("status", Postgrest.Constants.Operator.Equals, "failed")
             .Get(ct);
 
@@ -44,6 +45,7 @@ public class AdminTranslationsController(Client supabaseClient, ISchedulerFactor
             j.LastError
         )).ToList();
 
+
         ViewData["Title"] = "Translations";
         return View(items);
     }
@@ -68,7 +70,7 @@ public class AdminTranslationsController(Client supabaseClient, ISchedulerFactor
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> RetryFailed(CancellationToken ct)
     {
-        var failed = await supabaseClient.From<TranslationJob>()
+        var failed = await supabaseClient.From<TranslationJobEntity>()
             .Filter("status", Postgrest.Constants.Operator.Equals, "failed")
             .Get(ct);
 
