@@ -9,7 +9,7 @@ public class CategoryRepository(Client supabaseClient) : ICategoryRepository
     public async Task<IReadOnlyList<CategoryViewModel>> GetAllCategoriesAsync(string languageCode, CancellationToken ct = default)
     {
         var response = await supabaseClient.From<Category>()
-            .Filter("is_active", Postgrest.Constants.Operator.Equals, true)
+            .Filter("is_active", Postgrest.Constants.Operator.Equals, "true")
             .Order("sort_order", Postgrest.Constants.Ordering.Ascending)
             .Select("id, slug, icon, sort_order, category_translations(name, language_code)")
             .Get(ct);

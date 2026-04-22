@@ -16,7 +16,7 @@ public class GameRepository(Client supabaseClient) : IGameRepository
         var response = await supabaseClient.From<Game>()
             .Select(SelectEverything)
             .Filter("slug", Postgrest.Constants.Operator.Equals, slug)
-            .Filter("is_active", Postgrest.Constants.Operator.Equals, true)
+            .Filter("is_active", Postgrest.Constants.Operator.Equals, "true")
             .Single(ct);
         return response;
     }
@@ -35,7 +35,7 @@ public class GameRepository(Client supabaseClient) : IGameRepository
     {
         var response = await supabaseClient.From<Game>()
             .Select(SelectEverything)
-            .Filter("is_active", Postgrest.Constants.Operator.Equals, true)
+            .Filter("is_active", Postgrest.Constants.Operator.Equals, "true")
             .Order("created_at", Postgrest.Constants.Ordering.Descending)
             .Limit(count)
             .Get(ct);
@@ -46,7 +46,7 @@ public class GameRepository(Client supabaseClient) : IGameRepository
     {
         var response = await supabaseClient.From<Game>()
             .Select(SelectEverything)
-            .Filter("is_active", Postgrest.Constants.Operator.Equals, true)
+            .Filter("is_active", Postgrest.Constants.Operator.Equals, "true")
             .Order("play_count", Postgrest.Constants.Ordering.Descending)
             .Limit(count)
             .Get(ct);
@@ -77,7 +77,7 @@ public class GameRepository(Client supabaseClient) : IGameRepository
         var gamesResponse = await supabaseClient.From<Game>()
             .Select(SelectEverything)
             .Filter("id", Postgrest.Constants.Operator.In, gameIds)
-            .Filter("is_active", Postgrest.Constants.Operator.Equals, true)
+            .Filter("is_active", Postgrest.Constants.Operator.Equals, "true")
             .Get(ct);
 
         return gamesResponse.Models.ToList();
@@ -103,7 +103,7 @@ public class GameRepository(Client supabaseClient) : IGameRepository
         var gamesResponse = await supabaseClient.From<Game>()
             .Select(SelectEverything)
             .Filter("id", Postgrest.Constants.Operator.In, gameIds)
-            .Filter("is_active", Postgrest.Constants.Operator.Equals, true)
+            .Filter("is_active", Postgrest.Constants.Operator.Equals, "true")
             .Get(ct);
 
         return gamesResponse.Models.ToList();
@@ -139,7 +139,7 @@ public class GameRepository(Client supabaseClient) : IGameRepository
     public async Task<int> CountAllAsync(CancellationToken ct = default)
     {
         return await supabaseClient.From<Game>()
-            .Filter("is_active", Postgrest.Constants.Operator.Equals, true)
+            .Filter("is_active", Postgrest.Constants.Operator.Equals, "true")
             .Count(Postgrest.Constants.CountType.Exact);
     }
 
