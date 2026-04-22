@@ -44,6 +44,8 @@ builder.Services.AddScoped<IGameRepository, GameRepository>();
 builder.Services.AddScoped<IGameQueryService, GameQueryService>();
 builder.Services.AddScoped<IGameImportPipeline, GameImportPipeline>();
 builder.Services.AddScoped<IAdminAuthService, AdminAuthService>();
+builder.Services.AddScoped<Fun88.Web.Modules.Translation.Services.ITranslationService,
+    Fun88.Web.Modules.Translation.Services.OpenAiTranslationService>();
 builder.Services.AddScoped<GdEmbedUrlBuilder>();
 
 // HttpClient for GameDistribution

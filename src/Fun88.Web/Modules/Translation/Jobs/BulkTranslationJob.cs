@@ -9,6 +9,10 @@ using Quartz;
 using Supabase;
 using TranslationJobEntity = Fun88.Web.Infrastructure.Data.Entities.TranslationJob;
 
+// TODO(Plan 3): Wire this job to an admin "Translate All Pending" endpoint.
+// Currently unused — the admin RetryFailed action dispatches individual TranslationJobWorker
+// instances (one per job) to preserve per-row LanguageCode routing.
+// BulkTranslationJob is intended for batch processing large numbers of pending games in one shot.
 [DisallowConcurrentExecution]
 public class BulkTranslationJob(
     Client supabaseClient,

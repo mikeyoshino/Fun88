@@ -34,17 +34,15 @@ public class TranslationJobTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Execute_OnSuccess_CallsTranslateAsync()
+    public async Task Execute_WhenNoEnSourceExists_DoesNotCallTranslateAsync()
     {
-        // SupabaseStub returns [] for all requests so EN row will be null,
-        // meaning the null-guard fires and we land in the failure path silently.
-        // We verify TranslateAsync is NOT called when no EN source exists.
+        // SupabaseStub returns [] — no EN row exists, null-guard fires,
+        // job is recorded as failed and TranslateAsync is never invoked.
         var job = new TranslationJobWorker(_stub.Client, _svc.Object, NullLogger<TranslationJobWorker>.Instance);
         var ctx = BuildContext(new JobDataMap { ["game_id"] = Guid.NewGuid().ToString() });
 
         await job.Execute(ctx); // should not throw — null EN is caught and recorded as failed
 
-        // TranslateAsync should never be called when EN source row is missing
         _svc.Verify(s => s.TranslateAsync(
             It.IsAny<Dictionary<string, string>>(),
             It.IsAny<TranslationContext>(),

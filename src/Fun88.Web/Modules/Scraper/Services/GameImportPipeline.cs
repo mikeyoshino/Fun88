@@ -55,10 +55,11 @@ public class GameImportPipeline(
                 ]
             };
 
-            // EnqueueTranslationJobAsync runs before AddAsync so that if the Supabase
-            // insert fails, no game row has been committed yet (avoiding a silent orphan).
-            await EnqueueTranslationJobAsync(gameId, ct);
+            // Game row is persisted first. If the subsequent Supabase translation_jobs
+            // insert fails, we have a game with no job — recoverable via admin retry.
+            // The reverse ordering would risk a translation_jobs FK violation.
             await gameRepo.AddAsync(game, ct);
+            await EnqueueTranslationJobAsync(gameId, ct);
 
             return new ImportGameResult(Imported: true, Skipped: false, Error: null, GameId: gameId);
         }
@@ -103,10 +104,11 @@ public class GameImportPipeline(
                 ]
             };
 
-            // EnqueueTranslationJobAsync runs before AddAsync so that if the Supabase
-            // insert fails, no game row has been committed yet (avoiding a silent orphan).
-            await EnqueueTranslationJobAsync(gameId, ct);
+            // Game row is persisted first. If the subsequent Supabase translation_jobs
+            // insert fails, we have a game with no job — recoverable via admin retry.
+            // The reverse ordering would risk a translation_jobs FK violation.
             await gameRepo.AddAsync(game, ct);
+            await EnqueueTranslationJobAsync(gameId, ct);
 
             return new ImportGameResult(Imported: true, Skipped: false, Error: null, GameId: gameId);
         }

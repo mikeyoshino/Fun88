@@ -18,7 +18,7 @@ public class AdminTranslationsController(Client supabaseClient, ISchedulerFactor
     public async Task<IActionResult> Index(CancellationToken ct = default)
     {
         var jobs = await supabaseClient.From<TranslationJob>()
-            .Filter("status", Postgrest.Constants.Operator.In, new List<string> { "pending", "failed" })
+            .Filter("status", Postgrest.Constants.Operator.Equals, "failed")
             .Get(ct);
 
         var gameIdStrings = jobs.Models.Select(j => j.GameId.ToString()).ToList();
