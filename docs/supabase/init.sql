@@ -297,32 +297,42 @@ ALTER TABLE public.game_ratings      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_play_history ENABLE ROW LEVEL SECURITY;
 
 -- Public read policies
-CREATE POLICY IF NOT EXISTS "Public read active games"
+DROP POLICY IF EXISTS "Public read active games"          ON public.games;
+DROP POLICY IF EXISTS "Public read active categories"     ON public.categories;
+DROP POLICY IF EXISTS "Public read category_translations" ON public.category_translations;
+DROP POLICY IF EXISTS "Public read game_translations"     ON public.game_translations;
+DROP POLICY IF EXISTS "Public read game_categories"       ON public.game_categories;
+DROP POLICY IF EXISTS "Public read game_providers"        ON public.game_providers;
+DROP POLICY IF EXISTS "Users read own favorites"          ON public.user_favorites;
+DROP POLICY IF EXISTS "Users read own likes"              ON public.user_likes;
+DROP POLICY IF EXISTS "Users read own ratings"            ON public.game_ratings;
+
+CREATE POLICY "Public read active games"
     ON public.games FOR SELECT USING (is_active = true);
 
-CREATE POLICY IF NOT EXISTS "Public read active categories"
+CREATE POLICY "Public read active categories"
     ON public.categories FOR SELECT USING (is_active = true);
 
-CREATE POLICY IF NOT EXISTS "Public read category_translations"
+CREATE POLICY "Public read category_translations"
     ON public.category_translations FOR SELECT USING (true);
 
-CREATE POLICY IF NOT EXISTS "Public read game_translations"
+CREATE POLICY "Public read game_translations"
     ON public.game_translations FOR SELECT USING (true);
 
-CREATE POLICY IF NOT EXISTS "Public read game_categories"
+CREATE POLICY "Public read game_categories"
     ON public.game_categories FOR SELECT USING (true);
 
-CREATE POLICY IF NOT EXISTS "Public read game_providers"
+CREATE POLICY "Public read game_providers"
     ON public.game_providers FOR SELECT USING (is_active = true);
 
 -- Authenticated user policies (service key bypasses these)
-CREATE POLICY IF NOT EXISTS "Users read own favorites"
+CREATE POLICY "Users read own favorites"
     ON public.user_favorites FOR SELECT USING (auth.uid() = user_id);
 
-CREATE POLICY IF NOT EXISTS "Users read own likes"
+CREATE POLICY "Users read own likes"
     ON public.user_likes FOR SELECT USING (auth.uid() = user_id);
 
-CREATE POLICY IF NOT EXISTS "Users read own ratings"
+CREATE POLICY "Users read own ratings"
     ON public.game_ratings FOR SELECT USING (auth.uid() = user_id);
 
 -- ── 9. SEED DATA ─────────────────────────────────────────────
