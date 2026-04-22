@@ -14,6 +14,7 @@ using Fun88.Web.Modules.Scraper.Providers;
 using Fun88.Web.Modules.Scraper.Services;
 using Fun88.Web.Modules.Translation.Jobs;
 using Fun88.Web.Modules.Translation.Services;
+using Fun88.Web.Modules.Users.Services;
 using Fun88.Web.Shared.Constants;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -54,6 +55,7 @@ builder.Services.AddScoped<IGameRepository, GameRepository>();
 builder.Services.AddScoped<IGameQueryService, GameQueryService>();
 builder.Services.AddScoped<IGameImportPipeline, GameImportPipeline>();
 builder.Services.AddScoped<IAdminAuthService, AdminAuthService>();
+builder.Services.AddScoped<IUserSyncService, UserSyncService>();
 builder.Services.AddScoped<GdEmbedUrlBuilder>();
 
 // HttpClient for GameDistribution
@@ -85,11 +87,21 @@ builder.Services.AddAuthentication(schemeName)
         o.LoginPath = "/admin/auth/login";
         o.ExpireTimeSpan = TimeSpan.FromHours(expiryHours);
         o.SlidingExpiration = true;
+    })
+    .AddCookie("UserAuth", o =>
+    {
+        o.LoginPath = "/account/login";
+        o.ExpireTimeSpan = TimeSpan.FromDays(30);
+        o.SlidingExpiration = true;
     });
 
 builder.Services.AddAuthorization(o =>
+{
     o.AddPolicy(PolicyNames.AdminOnly, p =>
-        p.RequireAuthenticatedUser().RequireRole("Admin")));
+        p.RequireAuthenticatedUser().RequireRole("Admin"));
+    o.AddPolicy(PolicyNames.UserOnly, p =>
+        p.AddAuthenticationSchemes("UserAuth").RequireAuthenticatedUser());
+});
 
 builder.Services.AddControllersWithViews();
 
@@ -105,8 +117,8 @@ if (!app.Environment.IsDevelopment())
 app.UseMiddleware<SecurityHeadersMiddleware>();
 app.UseHttpsRedirection();
 app.UseRouting();
-app.UseMiddleware<LanguageResolutionMiddleware>();
 app.UseAuthentication();
+app.UseMiddleware<LanguageResolutionMiddleware>();
 app.UseAuthorization();
 
 app.MapStaticAssets();
