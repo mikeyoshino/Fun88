@@ -2,18 +2,23 @@ namespace Fun88.Web.Modules.Users.Controllers;
 
 using Fun88.Web.Modules.Users.Services;
 using Fun88.Web.Modules.Users.ViewModels;
+using Fun88.Web.Infrastructure.Configuration;
 using Fun88.Web.Infrastructure.Data.Entities;
 using Fun88.Web.Shared.Constants;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Supabase;
 using System.Security.Claims;
 
 [Route("account")]
-public class AccountController(Client supabaseClient, IUserSyncService userSync) : Controller
+public class AccountController(
+    Client supabaseClient,
+    IUserSyncService userSync,
+    IOptions<AuthCookieOptions> cookieOpts) : Controller
 {
-    private const string SchemeName = "UserAuth";
+    private readonly string _schemeName = cookieOpts.Value.UserSchemeName;
 
     [HttpGet("login")]
     public IActionResult Login(string? returnUrl)
@@ -88,7 +93,7 @@ public class AccountController(Client supabaseClient, IUserSyncService userSync)
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout()
     {
-        await HttpContext.SignOutAsync(SchemeName);
+        await HttpContext.SignOutAsync(_schemeName);
         return Redirect("/");
     }
 
@@ -153,10 +158,10 @@ public class AccountController(Client supabaseClient, IUserSyncService userSync)
             new Claim(ClaimTypes.Email, email),
             new Claim(ClaimTypes.Role, "User")
         };
-        var identity = new ClaimsIdentity(claims, SchemeName);
+        var identity = new ClaimsIdentity(claims, _schemeName);
         var principal = new ClaimsPrincipal(identity);
 
-        await HttpContext.SignInAsync(SchemeName, principal, new AuthenticationProperties
+        await HttpContext.SignInAsync(_schemeName, principal, new AuthenticationProperties
         {
             IsPersistent = rememberMe,
             ExpiresUtc = DateTimeOffset.UtcNow.AddDays(30)

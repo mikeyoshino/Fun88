@@ -10,5 +10,6 @@ public class ProfileViewModel
     public string? DisplayName { get; set; }
 
     [Required]
+    [RegularExpression("^(en|th)$", ErrorMessage = "Language must be 'en' or 'th'.")]
     public string PreferredLanguage { get; set; } = "en";
 }

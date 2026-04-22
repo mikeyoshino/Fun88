@@ -76,9 +76,10 @@ builder.Services.AddScoped<ITranslationService, OpenAiTranslationService>();
 
 builder.Services.AddHostedService<QuartzStartupService>();
 
-// Cookie authentication+ AdminOnly policy
+// Cookie authentication + AdminOnly / UserOnly policies
 var authSection = builder.Configuration.GetSection(AuthCookieOptions.Section);
 var schemeName = authSection["AdminSchemeName"] ?? "AdminCookie";
+var userSchemeName = authSection["UserSchemeName"] ?? "UserAuth";
 var expiryHours = int.TryParse(authSection["AdminExpiryHours"], out var h) ? h : 8;
 
 builder.Services.AddAuthentication(schemeName)
@@ -88,7 +89,7 @@ builder.Services.AddAuthentication(schemeName)
         o.ExpireTimeSpan = TimeSpan.FromHours(expiryHours);
         o.SlidingExpiration = true;
     })
-    .AddCookie("UserAuth", o =>
+    .AddCookie(userSchemeName, o =>
     {
         o.LoginPath = "/account/login";
         o.ExpireTimeSpan = TimeSpan.FromDays(30);
@@ -100,7 +101,7 @@ builder.Services.AddAuthorization(o =>
     o.AddPolicy(PolicyNames.AdminOnly, p =>
         p.RequireAuthenticatedUser().RequireRole("Admin"));
     o.AddPolicy(PolicyNames.UserOnly, p =>
-        p.AddAuthenticationSchemes("UserAuth").RequireAuthenticatedUser());
+        p.AddAuthenticationSchemes(userSchemeName).RequireAuthenticatedUser());
 });
 
 builder.Services.AddControllersWithViews();

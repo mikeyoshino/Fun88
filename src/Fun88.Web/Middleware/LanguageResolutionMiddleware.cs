@@ -9,19 +9,22 @@ using System.Security.Claims;
 public class LanguageResolutionMiddleware(RequestDelegate next, IOptions<AuthCookieOptions> cookieOpts)
 {
     private readonly string _langCookieName = cookieOpts.Value.LanguageCookieName;
+    private readonly string _userSchemeName = cookieOpts.Value.UserSchemeName;
 
     public async Task InvokeAsync(HttpContext ctx)
     {
         var lang = await ResolveLangAsync(ctx);
         ctx.Items[HttpContextKeys.CurrentLanguage] = lang;
 
-        if (!ctx.Request.Cookies.ContainsKey(_langCookieName))
-            ctx.Response.Cookies.Append(_langCookieName, lang, new CookieOptions
-            {
-                MaxAge = TimeSpan.FromDays(365),
-                SameSite = SameSiteMode.Strict,
-                HttpOnly = false
-            });
+        // Keep lang cookie in sync with the resolved value (covers user preference changes)
+        var cookieOptions = new CookieOptions
+        {
+            MaxAge = TimeSpan.FromDays(365),
+            SameSite = SameSiteMode.Strict,
+            HttpOnly = false
+        };
+        if (!ctx.Request.Cookies.TryGetValue(_langCookieName, out var existingLangCookie) || existingLangCookie != lang)
+            ctx.Response.Cookies.Append(_langCookieName, lang, cookieOptions);
 
         await next(ctx);
     }
@@ -30,7 +33,7 @@ public class LanguageResolutionMiddleware(RequestDelegate next, IOptions<AuthCoo
     {
         // Step 1: Check authenticated user's preferred_language
         var user = ctx.User;
-        if (user.Identity?.IsAuthenticated == true && user.Identity.AuthenticationType == "UserAuth")
+        if (user.Identity?.IsAuthenticated == true && user.Identity.AuthenticationType == _userSchemeName)
         {
             var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userId != null)
