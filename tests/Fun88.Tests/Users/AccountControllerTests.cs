@@ -4,6 +4,7 @@ using Fun88.Web.Modules.Users.Controllers;
 using Fun88.Web.Modules.Users.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 
@@ -11,7 +12,9 @@ using Moq;
 public class AccountControllerTests
 {
     private static AccountController BuildController(Supabase.Client client, IUserSyncService userSync)
-        => new(client, userSync, Options.Create(new AuthCookieOptions()))
+        => new(client, userSync, Options.Create(new AuthCookieOptions()),
+               new Mock<IFavoriteService>().Object, new Mock<IPlayHistoryService>().Object,
+               new Mock<ILogger<AccountController>>().Object)
         {
             ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
         };

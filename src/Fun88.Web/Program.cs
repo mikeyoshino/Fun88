@@ -57,6 +57,10 @@ builder.Services.AddScoped<IGameImportPipeline, GameImportPipeline>();
 builder.Services.AddScoped<IAdminAuthService, AdminAuthService>();
 builder.Services.AddScoped<IUserSyncService, UserSyncService>();
 builder.Services.AddScoped<GdEmbedUrlBuilder>();
+builder.Services.AddScoped<IFavoriteService, FavoriteService>();
+builder.Services.AddScoped<IGameRatingService, GameRatingService>();
+builder.Services.AddScoped<ILikeService, LikeService>();
+builder.Services.AddScoped<IPlayHistoryService, PlayHistoryService>();
 
 // HttpClient for GameDistribution
 builder.Services.AddHttpClient<GameDistributionHttpClient>(client =>

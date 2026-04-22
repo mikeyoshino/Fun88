@@ -14,5 +14,9 @@ public record GameDetailViewModel(
     long PlayCount,
     long LikeCount,
     IReadOnlyList<string> CategoryNames,
-    IReadOnlyList<GameCardViewModel> RelatedGames
+    IReadOnlyList<GameCardViewModel> RelatedGames,
+    // Engagement — null when user not authenticated
+    bool? IsFavorite = null,
+    int? UserRating = null,
+    double AverageRating = 0.0
 );

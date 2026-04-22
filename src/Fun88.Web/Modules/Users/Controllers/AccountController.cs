@@ -5,9 +5,11 @@ using Fun88.Web.Modules.Users.ViewModels;
 using Fun88.Web.Infrastructure.Configuration;
 using Fun88.Web.Infrastructure.Data.Entities;
 using Fun88.Web.Shared.Constants;
+using Fun88.Web.Shared.Extensions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Supabase;
 using System.Security.Claims;
@@ -16,7 +18,10 @@ using System.Security.Claims;
 public class AccountController(
     Client supabaseClient,
     IUserSyncService userSync,
-    IOptions<AuthCookieOptions> cookieOpts) : Controller
+    IOptions<AuthCookieOptions> cookieOpts,
+    IFavoriteService favoriteService,
+    IPlayHistoryService playHistoryService,
+    ILogger<AccountController> logger) : Controller
 {
     private readonly string _schemeName = cookieOpts.Value.UserSchemeName;
 
@@ -50,8 +55,9 @@ public class AccountController(
 
             return Redirect("/");
         }
-        catch
+        catch (Exception ex)
         {
+            logger.LogError(ex, "Auth error during {Action}", nameof(Login));
             ModelState.AddModelError("", "Invalid credentials.");
             return View(model);
         }
@@ -82,8 +88,9 @@ public class AccountController(
 
             return Redirect("/");
         }
-        catch
+        catch (Exception ex)
         {
+            logger.LogError(ex, "Auth error during {Action}", nameof(Register));
             ModelState.AddModelError("", "Registration failed. The email may already be in use.");
             return View(model);
         }
@@ -167,4 +174,31 @@ public class AccountController(
             ExpiresUtc = DateTimeOffset.UtcNow.AddDays(30)
         });
     }
+
+    [HttpGet("favorites")]
+    [Authorize(Policy = PolicyNames.UserOnly)]
+    public async Task<IActionResult> Favorites(int page = 1, CancellationToken ct = default)
+    {
+        var userId = GetUserId();
+        if (!userId.HasValue) return Unauthorized();
+        var lang = HttpContext.GetCurrentLanguage();
+        var games = await favoriteService.GetPagedAsync(userId.Value, page, 20, lang, ct);
+        ViewData["Title"] = "My Favorites";
+        return View(games);
+    }
+
+    [HttpGet("history")]
+    [Authorize(Policy = PolicyNames.UserOnly)]
+    public async Task<IActionResult> History(CancellationToken ct = default)
+    {
+        var userId = GetUserId();
+        if (!userId.HasValue) return Unauthorized();
+        var lang = HttpContext.GetCurrentLanguage();
+        var games = await playHistoryService.GetRecentAsync(userId.Value, 20, lang, ct);
+        ViewData["Title"] = "Play History";
+        return View(games);
+    }
+
+    private Guid? GetUserId() =>
+        Guid.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : null;
 }

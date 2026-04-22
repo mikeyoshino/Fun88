@@ -1,0 +1,20 @@
+@model IReadOnlyList<Fun88.Web.Modules.Games.ViewModels.GameCardViewModel>
+@{
+    ViewData["Title"] = ViewData["Title"] ?? "Play History";
+}
+
+<h2 style="font-size:18px;font-weight:700;margin-bottom:20px;">@ViewData["Title"]</h2>
+
+@if (Model.Any())
+{
+    <div class="game-grid">
+        @foreach (var game in Model)
+        {
+            <partial name="_GameCard" model="game" />
+        }
+    </div>
+}
+else
+{
+    <p style="text-align:center;color:#6c6880;padding:40px;">No play history yet.</p>
+}
