@@ -9,12 +9,15 @@ using System.Threading.Tasks;
 
 public class GameRepository(Client supabaseClient) : IGameRepository
 {
-    private const string SelectEverything = "*, game_translations(*), game_categories(*, categories(*, category_translations(*)))";
+    // Full embed (categories + translations) — detail page only
+    private const string SelectFull = "*, game_translations(*), game_categories(*, categories(*, category_translations(*)))";
+    // Translations only — list/card queries (avoids PostgREST aggregate-in-FROM error with ORDER+LIMIT)
+    private const string SelectForCard = "*, game_translations(*)";
 
     public async Task<Game?> GetBySlugAsync(string slug, CancellationToken ct = default)
     {
         var response = await supabaseClient.From<Game>()
-            .Select(SelectEverything)
+            .Select(SelectFull)
             .Filter("slug", Postgrest.Constants.Operator.Equals, slug)
             .Filter("is_active", Postgrest.Constants.Operator.Equals, "true")
             .Single(ct);
@@ -24,7 +27,7 @@ public class GameRepository(Client supabaseClient) : IGameRepository
     public async Task<Game?> GetByProviderGameIdAsync(int providerId, string providerGameId, CancellationToken ct = default)
     {
         var response = await supabaseClient.From<Game>()
-            .Select(SelectEverything)
+            .Select(SelectForCard)
             .Filter("provider_id", Postgrest.Constants.Operator.Equals, providerId)
             .Filter("provider_game_id", Postgrest.Constants.Operator.Equals, providerGameId)
             .Single(ct);
@@ -34,7 +37,7 @@ public class GameRepository(Client supabaseClient) : IGameRepository
     public async Task<IReadOnlyList<Game>> GetNewestAsync(int count, CancellationToken ct = default)
     {
         var response = await supabaseClient.From<Game>()
-            .Select(SelectEverything)
+            .Select(SelectForCard)
             .Filter("is_active", Postgrest.Constants.Operator.Equals, "true")
             .Order("created_at", Postgrest.Constants.Ordering.Descending)
             .Limit(count)
@@ -45,7 +48,7 @@ public class GameRepository(Client supabaseClient) : IGameRepository
     public async Task<IReadOnlyList<Game>> GetMostPopularAsync(int count, CancellationToken ct = default)
     {
         var response = await supabaseClient.From<Game>()
-            .Select(SelectEverything)
+            .Select(SelectForCard)
             .Filter("is_active", Postgrest.Constants.Operator.Equals, "true")
             .Order("play_count", Postgrest.Constants.Ordering.Descending)
             .Limit(count)
@@ -75,7 +78,7 @@ public class GameRepository(Client supabaseClient) : IGameRepository
         if (gameIds.Count == 0) return new List<Game>();
 
         var gamesResponse = await supabaseClient.From<Game>()
-            .Select(SelectEverything)
+            .Select(SelectForCard)
             .Filter("id", Postgrest.Constants.Operator.In, gameIds)
             .Filter("is_active", Postgrest.Constants.Operator.Equals, "true")
             .Get(ct);
@@ -101,7 +104,7 @@ public class GameRepository(Client supabaseClient) : IGameRepository
         if (gameIds.Count == 0) return new List<Game>();
 
         var gamesResponse = await supabaseClient.From<Game>()
-            .Select(SelectEverything)
+            .Select(SelectForCard)
             .Filter("id", Postgrest.Constants.Operator.In, gameIds)
             .Filter("is_active", Postgrest.Constants.Operator.Equals, "true")
             .Get(ct);
@@ -115,7 +118,7 @@ public class GameRepository(Client supabaseClient) : IGameRepository
         var rangeEnd = rangeStart + pageSize - 1;
 
         var response = await supabaseClient.From<Game>()
-            .Select(SelectEverything)
+            .Select(SelectForCard)
             .Order("created_at", Postgrest.Constants.Ordering.Descending)
             .Range(rangeStart, rangeEnd)
             .Get(ct);
@@ -158,3 +161,4 @@ public class GameRepository(Client supabaseClient) : IGameRepository
         await supabaseClient.From<Game>().Update(game, cancellationToken: ct);
     }
 }
+
