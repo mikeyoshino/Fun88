@@ -3,15 +3,14 @@
 @if (User.Identity?.IsAuthenticated == true && User.Identity.AuthenticationType == "UserAuth")
 {
     var email = User.FindFirst(ClaimTypes.Email)?.Value;
-    <span class="navbar-text me-3">@email</span>
-    <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+    <a asp-controller="Account" asp-action="Profile" class="btn-login" style="font-size:12px;padding:6px 16px;">@email</a>
+    <form asp-controller="Account" asp-action="Logout" method="post" style="display:inline;">
         @Html.AntiForgeryToken()
-        <button type="submit" class="btn btn-outline-secondary btn-sm">Logout</button>
+        <button type="submit" class="btn-login" style="background:#2a2540;box-shadow:none;font-size:12px;padding:6px 16px;border:none;cursor:pointer;">Logout</button>
     </form>
-    <a asp-controller="Account" asp-action="Profile" class="btn btn-outline-primary btn-sm ms-2">Profile</a>
 }
 else
 {
-    <a asp-controller="Account" asp-action="Login" class="btn btn-outline-primary btn-sm me-2">Login</a>
-    <a asp-controller="Account" asp-action="Register" class="btn btn-primary btn-sm">Register</a>
+    <a asp-controller="Account" asp-action="Login" class="btn-login" style="background:#2a2540;box-shadow:none;font-size:12px;padding:6px 16px;">Login</a>
+    <a asp-controller="Account" asp-action="Register" class="btn-login" style="font-size:12px;padding:6px 16px;">Register</a>
 }

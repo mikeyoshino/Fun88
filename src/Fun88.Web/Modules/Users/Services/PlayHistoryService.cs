@@ -30,8 +30,8 @@ public class PlayHistoryService(Client supabase) : IPlayHistoryService
 
         if (game != null)
         {
-            // NOTE: like_count update is non-atomic (read-then-write via PostgREST).
-            // For true atomicity, use a Supabase RPC: SELECT increment_like_count(game_id).
+            // NOTE: play_count update is non-atomic (read-then-write via PostgREST).
+            // For true atomicity, use a Supabase RPC: SELECT increment_play_count(game_id).
             // Concurrent requests may cause minor count drift — acceptable for a non-financial counter.
             game.PlayCount += 1;
             await supabase.From<Game>()

@@ -42,7 +42,10 @@ INSERT INTO category_translations (category_id, language_code, name) VALUES
 (8, 'th', 'อาร์เคด')
 ON CONFLICT (category_id, language_code) DO NOTHING;
 
--- Admin user creation — DO NOT seed passwords in SQL.
+-- Scraper schedule for GameDistribution (daily at 2:00 AM UTC)
+INSERT INTO scraper_schedules (provider_id, cron_expression, is_enabled)
+VALUES (1, '0 0 2 * * ?', true)
+ON CONFLICT (provider_id) DO NOTHING;
 -- Create the first admin via Supabase Auth dashboard or this SQL (replace hash with bcrypt):
 --
 --   INSERT INTO admin_users (id, email, password_hash, display_name, created_at)

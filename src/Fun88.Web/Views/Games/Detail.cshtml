@@ -18,14 +18,52 @@
 
     <div style="margin-top:16px;">
         <h1 style="font-size:20px;font-weight:800;margin-bottom:6px;">@Model.Title</h1>
-        <div style="display:flex;gap:16px;color:#6c6880;font-size:12px;margin-bottom:12px;flex-wrap:wrap;">
+        <div style="display:flex;gap:16px;color:#6c6880;font-size:12px;margin-bottom:12px;flex-wrap:wrap;align-items:center;">
             <span>▶ @Model.PlayCount.ToString("N0") plays</span>
             <span>♥ @Model.LikeCount.ToString("N0") likes</span>
+            @if (Model.AverageRating > 0)
+            {
+                <span>★ @Model.AverageRating.ToString("F1")</span>
+            }
             @foreach (var cat in Model.CategoryNames)
             {
                 <a asp-controller="Category" asp-action="Index" asp-route-slug="@cat.ToLower()" style="color:#a29bfe;">@cat</a>
             }
         </div>
+
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+                @* Like button *@
+                <form asp-controller="Games" asp-action="Like" asp-route-slug="@Model.Slug" method="post" style="display:inline;">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn-login" style="font-size:12px;padding:6px 16px;border:none;cursor:pointer;">
+                        ♥ Like
+                    </button>
+                </form>
+
+                @* Favorite toggle *@
+                <form asp-controller="Games" asp-action="Favorite" asp-route-slug="@Model.Slug" method="post" style="display:inline;">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn-login" style="font-size:12px;padding:6px 16px;border:none;cursor:pointer;@(Model.IsFavorite == true ? "" : "background:#2a2540;box-shadow:none;")">
+                        @(Model.IsFavorite == true ? "★ Saved" : "☆ Save")
+                    </button>
+                </form>
+
+                @* Star rating *@
+                <span style="display:flex;align-items:center;gap:4px;">
+                    @for (int star = 1; star <= 5; star++)
+                    {
+                        var s = star;
+                        <form asp-controller="Games" asp-action="Rate" asp-route-slug="@Model.Slug" method="post" style="display:inline;">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="rating" value="@s" />
+                            <button type="submit" style="background:none;border:none;cursor:pointer;font-size:18px;color:@(Model.UserRating >= s ? "#f39c12" : "#2a2540");">★</button>
+                        </form>
+                    }
+                </span>
+            </div>
+        }
 
         @if (!string.IsNullOrEmpty(Model.Description))
         {
