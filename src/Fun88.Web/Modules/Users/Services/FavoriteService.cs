@@ -46,15 +46,25 @@ public class FavoriteService(Client supabase) : IFavoriteService
             .Range(rangeStart, rangeEnd)
             .Get(ct);
 
-        var gameIds = favResponse.Models.Select(f => f.GameId).ToList();
+        var gameIds = favResponse.Models.Select(f => f.GameId.ToString()).ToList();
         if (gameIds.Count == 0) return [];
 
         var gamesResponse = await supabase.From<Game>()
-            .Select("*, game_translations(*)")
+            .Select("*")
             .Filter("id", Postgrest.Constants.Operator.In, gameIds)
             .Get(ct);
 
-        return gamesResponse.Models.Select(g => ToCard(g, lang)).ToList();
+        var games = gamesResponse.Models;
+        if (games.Count == 0) return [];
+
+        var transResp = await supabase.From<GameTranslation>()
+            .Filter("game_id", Postgrest.Constants.Operator.In, gameIds)
+            .Get(ct);
+        var byGame = transResp.Models.GroupBy(t => t.GameId).ToDictionary(g => g.Key, g => g.ToList());
+        foreach (var game in games)
+            game.Translations = byGame.TryGetValue(game.Id, out var ts) ? ts : new List<GameTranslation>();
+
+        return games.Select(g => ToCard(g, lang)).ToList();
     }
 
     private static GameCardViewModel ToCard(Game game, string lang)
